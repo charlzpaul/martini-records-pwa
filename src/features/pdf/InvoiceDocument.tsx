@@ -48,47 +48,42 @@ const styles = StyleSheet.create({
   },
 });
 
-const纸张尺寸 = {
-  A4: { width: 595, height: 842 },
-  Letter: { width: 612, height: 792 },
-};
-
 function getLabelValue(label: CanvasLabel, invoice: Invoice): string {
-    switch (label.type) {
-        case 'Subtotal':
-            return `Subtotal: ${invoice.subtotal.toFixed(2)}`;
-        case 'Tax':
-            return `Tax: ${invoice.taxAmount.toFixed(2)}`;
-        case 'Total':
-            return `Total: ${invoice.grandTotal.toFixed(2)}`;
-        default:
-            return label.textValue;
-    }
+  switch (label.type) {
+    case 'Subtotal':
+      return `Subtotal: ${invoice.subtotal.toFixed(2)}`;
+    case 'Tax':
+      return `Tax: ${invoice.taxAmount.toFixed(2)}`;
+    case 'Total':
+      return `Total: ${invoice.grandTotal.toFixed(2)}`;
+    default:
+      return label.textValue;
+  }
 }
 
 interface InvoiceDocumentProps {
-    invoice: Invoice;
-    template: Template;
+  invoice: Invoice;
+  template: Template;
 }
 
 export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template }) => {
-    const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
 
-    useEffect(() => {
-        async function loadCustomer() {
-            if (invoice.customerId) {
-                const cust = await dbApi.getCustomerById(invoice.customerId);
-                setCustomer(cust);
-            }
-        }
-        loadCustomer();
-    }, [invoice.customerId]);
+  useEffect(() => {
+    async function loadCustomer() {
+      if (invoice.customerId) {
+        const cust = await dbApi.getCustomerById(invoice.customerId);
+        setCustomer(cust);
+      }
+    }
+    loadCustomer();
+  }, [invoice.customerId]);
 
-    const paperDimensions = 纸张尺寸[template.paperSize];
+  const paperSize = (template.paperSize === 'Letter' ? 'LETTER' : 'A4') as 'A4' | 'LETTER';
 
-    return (
-        <Document>
-            <Page size={template.paperSize} style={styles.page}>
+  return (
+    <Document>
+      <Page size={paperSize} style={styles.page}>
                 {/* Static Content: Images and Labels */}
                 {template.images.map(image => (
                     <Image

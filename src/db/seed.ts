@@ -5,6 +5,7 @@ import {
   productStore,
   invoiceStore,
   metaStore,
+  initializeLocalForage,
 } from './store';
 import type { Template, Customer, Product, Invoice } from './models';
 
@@ -112,3 +113,5 @@ export async function seedDatabaseIfNeeded() {
     console.log('Database already seeded.');
   }
 }
+
+export { initializeLocalForage };

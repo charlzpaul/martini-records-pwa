@@ -3,25 +3,7 @@ import localforage from 'localforage';
 
 const APP_NAME = 'martinishot';
 
-/**
- * Configuration for localforage to use Blobs directly.
- * This is crucial for storing PDF files.
- */
-localforage.config({
-  driver: [
-    localforage.INDEXEDDB,
-    localforage.WEBSQL,
-    localforage.LOCALSTORAGE,
-  ],
-  name: APP_NAME,
-  version: 1.0,
-  description: 'Offline-first database for the invoice PWA.',
-});
-
-/**
- * Individual data stores (like tables in a relational database).
- * This helps keep data types separate and queries clean.
- */
+// Create stores as separate instances to avoid module-level initialization issues
 export const templateStore = localforage.createInstance({
   name: APP_NAME,
   storeName: 'templates',
@@ -47,10 +29,17 @@ export const pdfStore = localforage.createInstance({
   storeName: 'generatedPdfs',
 });
 
-/**
- * A separate store for application metadata, like the seeding flag.
- */
 export const metaStore = localforage.createInstance({
-    name: APP_NAME,
-    storeName: 'meta',
+  name: APP_NAME,
+  storeName: 'meta',
 });
+
+// Initialize localforage with a promise
+export async function initializeLocalForage() {
+  try {
+    await localforage.ready();
+    console.log('LocalForage initialized successfully');
+  } catch (error) {
+    console.error('Error initializing LocalForage:', error);
+  }
+}

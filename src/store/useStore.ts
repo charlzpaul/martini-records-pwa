@@ -22,7 +22,7 @@ interface AppState {
   // Add actions for creating items will be added later
 }
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>((set) => ({
   // Initial state
   templates: [],
   customers: [],

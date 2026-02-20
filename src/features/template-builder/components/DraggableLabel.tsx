@@ -32,7 +32,7 @@ export function DraggableLabel({ label, isSelected }: DraggableLabelProps) {
       {...attributes}
       className={cn(
         "absolute cursor-grab active:cursor-grabbing p-1 border-2 border-transparent",
-        isSelected && "border-blue-500 border-dashed"
+        isSelected && "border-accent border-dashed"
       )}
       onClick={(e) => {
         e.stopPropagation();

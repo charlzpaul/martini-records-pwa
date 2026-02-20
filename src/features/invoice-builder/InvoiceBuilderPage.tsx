@@ -78,7 +78,9 @@ export function InvoiceBuilderPage() {
     toast.promise(saveAsCopy, {
         loading: 'Saving a copy...',
         success: (saved) => {
-            navigate(`/invoice/${saved.id}`);
+            if (saved?.id) {
+                navigate(`/invoice/${saved.id}`);
+            }
             return 'Invoice copy created successfully!';
         },
         error: 'Failed to save copy.',

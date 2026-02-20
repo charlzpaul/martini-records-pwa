@@ -45,48 +45,6 @@ const importSyncableData = async (data: { templates: Template[], customers: Cust
     ]);
 };
 
-// Handle PDF files separately
-const handlePdfSync = async (fileId: string, invoiceIds: string[]) => {
-    try {
-        // Download PDFs from Drive
-        const pdfs = await Promise.all(
-            invoiceIds.map(async (invoiceId) => {
-                try {
-                    const pdfFile = await driveApi.getAppDataFile();
-                    if (pdfFile) {
-                        const pdfData = await driveApi.downloadAppData(pdfFile.id);
-                        // Convert to blob for LocalForage
-                        const blob = new Blob([JSON.stringify(pdfData)], { type: 'application/json' });
-                        return {
-                            invoiceId,
-                            blob,
-                            generatedAt: pdfData.generatedAt,
-                        };
-                    }
-                    return null;
-                } catch (err) {
-                    console.error(`Failed to download PDF for invoice ${invoiceId}:`, err);
-                    return null;
-                }
-            })
-        );
-
-        // Save PDFs to local storage
-        await Promise.all(
-            pdfs.filter(Boolean).map((pdf) => {
-                if (!pdf) return Promise.resolve();
-                return dbApi.saveGeneratedPdf({
-                    invoiceId: pdf.invoiceId,
-                    blob: pdf.blob,
-                    generatedAt: pdf.generatedAt,
-                });
-            })
-        );
-    } catch (error) {
-        console.error('PDF sync failed:', error);
-        throw error;
-    }
-};
 
 // Merge strategy: prefer local data for conflicts
 const mergeData = async (localData: any, remoteData: any) => {

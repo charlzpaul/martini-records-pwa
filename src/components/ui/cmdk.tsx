@@ -1,18 +1,19 @@
 import * as React from "react"
 import * as CmdkPrimitive from "cmdk"
+import { Dialog, DialogContent, DialogPortal, DialogOverlay } from "@radix-ui/react-dialog"
 import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const Command = CmdkPrimitive.Root
+const Command = CmdkPrimitive.Command
 
 const CommandDialog = ({
   ...props
-}: React.ComponentProps<typeof CmdkPrimitive.Dialog>) => {
+}: React.ComponentProps<typeof Dialog>) => {
   return (
-    <CmdkPrimitive.Dialog {...props}>
-      <CmdkPrimitive.DialogPortal>
-        <CmdkPrimitive.DialogOverlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
-        <CmdkPrimitive.DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
+    <Dialog {...props}>
+      <DialogPortal>
+        <DialogOverlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg">
           <CmdkPrimitive.Command className="relative overflow-hidden rounded-md border bg-background p-2">
             <CmdkPrimitive.CommandInput
               placeholder="Type a command or search..."
@@ -28,9 +29,9 @@ const CommandDialog = ({
               </CmdkPrimitive.CommandGroup>
             </CmdkPrimitive.CommandList>
           </CmdkPrimitive.Command>
-        </CmdkPrimitive.DialogContent>
-      </CmdkPrimitive.DialogPortal>
-    </CmdkPrimitive.Dialog>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   )
 }
 

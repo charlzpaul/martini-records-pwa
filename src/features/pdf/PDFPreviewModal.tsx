@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRightWidth: 0,
     borderBottomWidth: 0,
-    borderColor: '#dfdfdf',
+    borderColor: 'hsl(var(--border))',
   },
   tableRow: {
     margin: "auto",
@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderLeftWidth: 0,
     borderTopWidth: 0,
-    borderColor: '#dfdfdf',
-    backgroundColor: '#f2f2f2',
+    borderColor: 'hsl(var(--border))',
+    backgroundColor: 'hsl(var(--muted))',
     padding: 5,
   },
   tableCol: {
@@ -53,52 +53,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderLeftWidth: 0,
     borderTopWidth: 0,
-    borderColor: '#dfdfdf',
+    borderColor: 'hsl(var(--border))',
     padding: 5,
   },
 });
 
-const paperDimensions = {
-  A4: { width: 595, height: 842 },
-  Letter: { width: 612, height: 792 },
-};
 
 function getLabelValue(label: any, invoice: Invoice): string {
-    switch (label.type) {
-        case 'Subtotal':
-            return `Subtotal: ${invoice.subtotal.toFixed(2)}`;
-        case 'Tax':
-            return `Tax: ${invoice.taxAmount.toFixed(2)}`;
-        case 'Total':
-            return `Total: ${invoice.grandTotal.toFixed(2)}`;
-        default:
-            return label.textValue;
-    }
+  switch (label.type) {
+    case 'Subtotal':
+      return `Subtotal: ${invoice.subtotal.toFixed(2)}`;
+    case 'Tax':
+      return `Tax: ${invoice.taxAmount.toFixed(2)}`;
+    case 'Total':
+      return `Total: ${invoice.grandTotal.toFixed(2)}`;
+    default:
+      return label.textValue;
+  }
 }
 
 interface InvoiceDocumentProps {
-    invoice: Invoice;
-    template: Template;
+  invoice: Invoice;
+  template: Template;
 }
 
 const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template }) => {
-    const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
 
-    useEffect(() => {
-        async function loadCustomer() {
-            if (invoice.customerId) {
-                const cust = await dbApi.getCustomerById(invoice.customerId);
-                setCustomer(cust);
-            }
-        }
-        loadCustomer();
-    }, [invoice.customerId]);
+  useEffect(() => {
+    async function loadCustomer() {
+      if (invoice.customerId) {
+        const cust = await dbApi.getCustomerById(invoice.customerId);
+        setCustomer(cust);
+      }
+    }
+    loadCustomer();
+  }, [invoice.customerId]);
 
-    const paperDimensions = paperDimensions[template.paperSize];
+  const paperSize = (template.paperSize === 'Letter' ? 'LETTER' : 'A4') as 'A4' | 'LETTER';
 
-    return (
-        <Document>
-            <Page size={template.paperSize} style={styles.page}>
+  return (
+    <Document>
+      <Page size={paperSize} style={styles.page}>
                 {/* Static Content: Images and Labels */}
                 {template.images.map(image => (
                     <Image

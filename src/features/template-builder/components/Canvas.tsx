@@ -58,10 +58,10 @@ export function Canvas() {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="w-full max-w-4xl mx-auto p-4 bg-gray-200 dark:bg-gray-800 rounded-lg">
-        <div 
+      <div className="w-full max-w-4xl mx-auto p-4 bg-muted rounded-lg">
+        <div
           style={containerStyle}
-          className="bg-white shadow-lg relative mx-auto overflow-hidden"
+          className="bg-card text-card-foreground shadow-lg relative mx-auto overflow-hidden"
           onClick={() => setSelectedItemId(null)} // Unselect when clicking canvas
         >
           {/* Render Draggable Images */}
@@ -85,8 +85,8 @@ export function Canvas() {
           ))}
 
           {/* Visualize Line Item Area */}
-          <div 
-            className="absolute bg-blue-100/50 border-2 border-dashed border-blue-400 pointer-events-none"
+          <div
+            className="absolute bg-accent/20 border-2 border-dashed border-accent pointer-events-none"
             style={{
               top: `${(activeTemplate.lineItemArea.y / 1123) * 100}%`,
               height: `${(activeTemplate.lineItemArea.height / 1123) * 100}%`,
@@ -94,7 +94,7 @@ export function Canvas() {
               right: '5%',
             }}
           >
-            <p className="text-center text-blue-500 p-2 text-sm">Line Item Area</p>
+            <p className="text-center text-accent-foreground p-2 text-sm">Line Item Area</p>
           </div>
         </div>
       </div>

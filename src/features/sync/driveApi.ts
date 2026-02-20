@@ -10,20 +10,20 @@ const APP_DATA_FOLDER = 'MartiniShot-Invoices';
 async function getHeaders() {
     const token = useAuthStore.getState().token;
     if (!token) throw new Error('Not authenticated');
-    return {
+    const headers = {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
     };
+    return headers;
 }
 
 // Function to find or create the app data folder
 async function getAppDataFolderId(): Promise<string> {
-    const headers = await getHeaders();
     let folderId: string | null = null;
 
     // Search for the folder
     const searchResponse = await axios.get(`${DRIVE_API_URL}/files`, {
-        headers,
+        headers: await getHeaders(),
         params: {
             q: `name='${APP_DATA_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
             fields: 'files(id)',
@@ -37,7 +37,7 @@ async function getAppDataFolderId(): Promise<string> {
         const createFolderResponse = await axios.post(`${DRIVE_API_URL}/files`, {
             name: APP_DATA_FOLDER,
             mimeType: 'application/vnd.google-apps.folder',
-        }, { headers });
+        }, { headers: await getHeaders() });
         folderId = createFolderResponse.data.id;
     }
 
@@ -47,11 +47,10 @@ async function getAppDataFolderId(): Promise<string> {
 
 // Function to get the app data file's metadata (if it exists)
 export async function getAppDataFile() {
-    const headers = await getHeaders();
     const folderId = await getAppDataFolderId();
     
     const response = await axios.get(`${DRIVE_API_URL}/files`, {
-        headers,
+        headers: await getHeaders(),
         params: {
             q: `'${folderId}' in parents and name='${APP_DATA_FILE_NAME}' and trashed=false`,
             fields: 'files(id, name, modifiedTime)',
@@ -63,9 +62,8 @@ export async function getAppDataFile() {
 
 // Function to download the app data file
 export async function downloadAppData(fileId: string) {
-    const headers = await getHeaders();
     const response = await axios.get(`${DRIVE_API_URL}/files/${fileId}`, {
-        headers,
+        headers: await getHeaders(),
         params: { alt: 'media' },
     });
     return response.data;
@@ -73,7 +71,6 @@ export async function downloadAppData(fileId: string) {
 
 // Function to upload/update the app data file
 export async function uploadAppData(content: object) {
-    const headers = await getHeaders();
     const folderId = await getAppDataFolderId();
     const fileMetadata = await getAppDataFile();
     

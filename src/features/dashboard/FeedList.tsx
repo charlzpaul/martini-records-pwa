@@ -1,5 +1,5 @@
 // src/features/dashboard/FeedList.tsx
-import { FeedItem as FeedItemType } from '@/store/useStore';
+import type { FeedItem as FeedItemType } from '@/store/useStore';
 import { FeedItem } from './FeedItem';
 
 interface FeedListProps {

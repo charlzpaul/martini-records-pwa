@@ -66,33 +66,6 @@ export function SettingsPanel() {
   const handleAddImageClick = () => {
     fileInputRef.current?.click();
   };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      const base64Data = loadEvent.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        const newImage: CanvasImage = {
-          id: `image-${crypto.randomUUID()}`,
-          base64Data,
-          originalWidth: img.width,
-          originalHeight: img.height,
-          currentWidth: img.width > 200 ? 200 : img.width,
-          currentHeight: img.width > 200 ? (img.height / img.width) * 200 : img.height,
-          x: 20,
-          y: 20,
-          opacity: 1,
-        };
-        updateActiveTemplate({ images: [...activeTemplate.images, newImage] });
-      };
-      img.src = base64Data;
-    };
-    reader.readAsDataURL(file);
-  };
   
   const handleOpacityChange = (value: number[]) => {
       if(selectedItem?.type !== 'image') return;

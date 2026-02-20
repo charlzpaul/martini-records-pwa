@@ -1,6 +1,6 @@
 // src/features/template-builder/components/DraggableImage.tsx
 import { useDraggable } from '@dnd-kit/core';
-import { Resizable, type ResizeCallback, type NumberSize } from 're-resizable';
+import { Resizable, type ResizeCallback } from 're-resizable';
 import type { CanvasImage } from '@/db/models';
 import { useTemplateStore } from '../store/useTemplateStore';
 import { cn } from '@/lib/utils';
@@ -27,13 +27,13 @@ export function DraggableImage({ image, isSelected }: DraggableImageProps) {
       }
     : undefined;
 
-  const handleResizeStop: ResizeCallback = (e, direction, ref, d) => {
+  const handleResizeStop: ResizeCallback = (_e, _direction, _ref, d) => {
     if (!activeTemplate) return;
 
     const newWidth = image.currentWidth + d.width;
     const newHeight = image.currentHeight + d.height;
 
-    const updatedImages = activeTemplate.images.map(img => 
+    const updatedImages = activeTemplate.images.map(img =>
       img.id === image.id ? { ...img, currentWidth: newWidth, currentHeight: newHeight } : img
     );
     updateActiveTemplate({ images: updatedImages });

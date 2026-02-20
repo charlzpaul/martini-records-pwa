@@ -36,7 +36,7 @@ export function LayerList() {
               <Type className="h-4 w-4" />
             }
             <span className="truncate">
-              {layer.itemType === 'Image' ? `Image: ${layer.id.substring(0, 6)}` : layer.textValue}
+              {layer.itemType === 'Image' ? `Image: ${layer.id.substring(0, 6)}` : (layer as any).textValue}
             </span>
           </div>
         ))}

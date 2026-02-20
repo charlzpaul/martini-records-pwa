@@ -14,11 +14,38 @@ import type { Template, Customer, Product, Invoice, GeneratedPDF } from './model
  * @returns {Promise<T[]>} - An array of items.
  */
 async function getAll<T>(store: LocalForage): Promise<T[]> {
-  const items: T[] = [];
-  await store.iterate((value: T) => {
-    items.push(value);
-  });
-  return items;
+  try {
+    const items: T[] = [];
+    await store.iterate((value: T) => {
+      items.push(value);
+    });
+    return items;
+  } catch (error) {
+    console.error('Error in getAll:', error);
+    return [];
+  }
+}
+
+/**
+ * Generic function to get an item by key prefix.
+ * @param {LocalForage} store - The store instance to query.
+ * @param {string} prefix - The key prefix to filter by.
+ * @returns {Promise<T | null>} - The item or null if not found.
+ */
+async function getOneByPrefix<T>(store: LocalForage, prefix: string): Promise<T | null> {
+  try {
+    let result: T | null = null;
+    await store.iterate((value: T, key: string) => {
+      if (key.startsWith(prefix)) {
+        result = value;
+        return true; // Stop iterating
+      }
+    });
+    return result;
+  } catch (error) {
+    console.error('Error in getOneByPrefix:', error);
+    return null;
+  }
 }
 
 /**
@@ -57,7 +84,7 @@ export const deleteTemplate = (id: string) => templateStore.removeItem(id);
 // Customers
 export const getCustomers = () => getAll<Customer>(customerStore);
 export const getCustomerById = (id: string) => customerStore.getItem<Customer>(id);
-export const saveCustomer = (customer: Omit<Customer, 'id'> & { id?: string }) => saveItem<Customer>(customerStore, customer as any); // TS struggle with Omit on non-optional props
+export const saveCustomer = (customer: Omit<Customer, 'id'> & { id?: string }) => saveItem<Customer>(customerStore, customer as any);
 export const deleteCustomer = (id: string) => customerStore.removeItem(id);
 
 // Products
@@ -73,33 +100,12 @@ export const saveInvoice = (invoice: Omit<Invoice, 'id' | 'createdAt' | 'updated
 export const deleteInvoice = (id: string) => invoiceStore.removeItem(id);
 
 // Generated PDFs
-
 export const getGeneratedPdfs = () => getAll<GeneratedPDF>(pdfStore);
-
 export const getGeneratedPdfById = (id: string) => pdfStore.getItem<GeneratedPDF>(id);
 
 export const getGeneratedPdfByInvoiceId = async (invoiceId: string): Promise<GeneratedPDF | null> => {
-
-    let result: GeneratedPDF | null = null;
-
-    await pdfStore.iterate((value: GeneratedPDF) => {
-
-        if (value.invoiceId === invoiceId) {
-
-            result = value;
-
-            // We found it, so we can stop iterating
-
-            return result;
-
-        }
-
-    });
-
-    return result;
-
+  return getOneByPrefix(pdfStore, `pdf_${invoiceId}_`);
 };
 
 export const saveGeneratedPdf = (pdf: Omit<GeneratedPDF, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => saveItem<GeneratedPDF>(pdfStore, pdf);
-
 export const deleteGeneratedPdf = (id: string) => pdfStore.removeItem(id);

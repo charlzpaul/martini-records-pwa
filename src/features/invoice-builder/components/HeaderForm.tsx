@@ -43,7 +43,6 @@ export function HeaderForm() {
   if (!activeInvoice) return null;
 
   const selectedCustomer = customers.find(c => c.id === activeInvoice.customerId);
-  const selectedTemplate = templates.find(t => t.id === activeInvoice.templateId);
 
   return (
     <div className="p-4 border rounded-lg grid grid-cols-1 md:grid-cols-3 gap-6">
