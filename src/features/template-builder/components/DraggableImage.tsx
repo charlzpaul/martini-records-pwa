@@ -1,4 +1,5 @@
 // src/features/template-builder/components/DraggableImage.tsx
+import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Resizable, type ResizeCallback } from 're-resizable';
 import type { CanvasImage } from '@/db/models';
@@ -27,9 +28,11 @@ export function DraggableImage({ image, isSelected }: DraggableImageProps) {
       }
     : undefined;
 
+  const isResizingRef = React.useRef(false);
   const handleResizeStop: ResizeCallback = (_e, _direction, _ref, d) => {
-    if (!activeTemplate) return;
-
+    if (isResizingRef.current || !activeTemplate) return;
+    
+    isResizingRef.current = true;
     const newWidth = image.currentWidth + d.width;
     const newHeight = image.currentHeight + d.height;
 
@@ -37,6 +40,11 @@ export function DraggableImage({ image, isSelected }: DraggableImageProps) {
       img.id === image.id ? { ...img, currentWidth: newWidth, currentHeight: newHeight } : img
     );
     updateActiveTemplate({ images: updatedImages });
+    
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isResizingRef.current = false;
+    }, 100);
   };
   
   return (

@@ -1,4 +1,5 @@
 // src/features/template-builder/components/DraggableLabel.tsx
+import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import type { CanvasLabel } from '@/db/models';
 import { useTemplateStore } from '../store/useTemplateStore';
