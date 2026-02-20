@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Martini Shot Color Palette */
+    --martini-primary: 158 48% 46%; /* Emerald Green - Olive */
+    --martini-secondary: 38 92% 50%; /* Gold/Amber - Garnish */
+    --martini-dark: 28 16% 21%; /* Deep Charcoal - Glass */
+    --martini-light: 0 0% 98%; /* Cream/Off-white - Cocktail */
+    --martini-accent: 174 83% 41%; /* Teal - Martini color */
+
+    --background: var(--martini-light);
+    --foreground: var(--martini-dark);
+    --card: var(--martini-light);
+    --card-foreground: var(--martini-dark);
+    --popover: var(--martini-light);
+    --popover-foreground: var(--martini-dark);
+    --primary: var(--martini-primary);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--martini-secondary);
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 4.8% 96%;
+    --muted-foreground: 240 5% 45%;
+    --accent: var(--martini-accent);
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: var(--martini-primary);
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --martini-primary: 158 48% 46%;
+    --martini-secondary: 38 92% 50%;
+    --martini-dark: 28 16% 21%;
+    --martini-light: 0 0% 15%;
+    --martini-accent: 174 83% 41%;
+
+    --background: var(--martini-dark);
+    --foreground: var(--martini-light);
+    --card: var(--martini-dark);
+    --card-foreground: var(--martini-light);
+    --popover: var(--martini-dark);
+    --popover-foreground: var(--martini-light);
+    --primary: var(--martini-primary);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--martini-secondary);
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 3.7% 20%;
+    --muted-foreground: 240 5% 65%;
+    --accent: var(--martini-accent);
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 25%;
+    --input: 240 3.7% 25%;
+    --ring: var(--martini-primary);
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
