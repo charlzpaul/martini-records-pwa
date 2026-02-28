@@ -67,34 +67,117 @@
                 - generic [ref=e82] [cursor=pointer]:
                   - generic [ref=e83]:
                     - img [ref=e84]
-                    - generic [ref=e86]: "Subtotal: $0.00 Tax 1 (10%): $"
-                  - generic [ref=e87]:
-                    - combobox [ref=e89]:
+                    - generic [ref=e88]: "Image: defaul"
+                  - generic [ref=e89]:
+                    - button [disabled]:
+                      - img
+                    - button [disabled]:
+                      - img
+                    - button [ref=e90]:
+                      - img [ref=e91]
+                - generic [ref=e94] [cursor=pointer]:
+                  - generic [ref=e95]:
+                    - img [ref=e96]
+                    - generic [ref=e97]: Line Items Area
+                  - button "Add % Column" [ref=e99]:
+                    - img [ref=e100]
+                - generic [ref=e101] [cursor=pointer]:
+                  - generic [ref=e102]:
+                    - img [ref=e103]
+                    - generic [ref=e105]: "Subtotal: $0.00 Tax 1 (10%): $"
+                  - generic [ref=e106]:
+                    - combobox [ref=e108]:
                       - generic: Arial
-                      - img [ref=e90]
-                    - button [ref=e92]:
-                      - img [ref=e93]
-                - generic [ref=e97] [cursor=pointer]:
-                  - img [ref=e98]
-                  - generic [ref=e99]: Line Items Area
-          - generic [ref=e100]:
-            - button "Preview" [ref=e101]
-            - button "Save as Copy" [ref=e102]
-            - button "Save Changes" [ref=e103]
-        - generic [ref=e104]:
-          - generic [ref=e106]:
-            - 'button "Invoice #: INV-2023-001" [disabled] [ref=e107]':
-              - generic [ref=e109]: "Invoice #: INV-2023-001"
-            - 'button "Date: January 1, 2023" [disabled] [ref=e118]':
-              - generic [ref=e120]: "Date: January 1, 2023"
-            - 'button "John Doe 123 Main St, City, State 12345 Phone: (555) 123-4567 Tax ID: 123-45-6789" [disabled] [ref=e129]':
-              - generic [ref=e131]: "John Doe 123 Main St, City, State 12345 Phone: (555) 123-4567 Tax ID: 123-45-6789"
-            - 'button "Subtotal: $0.00 Tax 1 (10%): $0.00 Tax 2 (5%): $0.00 Total: $0.00" [disabled] [ref=e140]':
-              - generic [ref=e142]: "Subtotal: $0.00 Tax 1 (10%): $0.00 Tax 2 (5%): $0.00 Total: $0.00"
-            - button "Line Items Area Drag to move • Drag bottom edge to resize This is where invoice line items will appear" [disabled] [ref=e152]:
-              - generic [ref=e153]:
-                - paragraph [ref=e154]: Line Items Area
-                - paragraph [ref=e155]: Drag to move • Drag bottom edge to resize
-                - paragraph [ref=e156]: This is where invoice line items will appear
-          - status [ref=e158]
+                      - img [ref=e109]
+                    - button "Add Adjustment Layer" [ref=e111]:
+                      - img [ref=e112]
+                - generic [ref=e113]:
+                  - generic [ref=e115] [cursor=pointer]:
+                    - img [ref=e116]
+                    - textbox [ref=e120]: Subtotal
+                  - generic [ref=e121] [cursor=pointer]:
+                    - generic [ref=e122]:
+                      - img [ref=e123]
+                      - generic [ref=e126]:
+                        - generic [ref=e127]: Adjustment
+                        - textbox [ref=e128]: Adjustment
+                        - combobox [ref=e129]:
+                          - generic: Percentage
+                          - img [ref=e130]
+                        - combobox [ref=e132]:
+                          - generic: 10%
+                          - img [ref=e133]
+                    - button [ref=e136]:
+                      - img [ref=e137]
+                  - generic [ref=e141] [cursor=pointer]:
+                    - img [ref=e142]
+                    - textbox [ref=e146]: Grand Total
+          - generic [ref=e147]:
+            - button "Preview" [ref=e148]
+            - button "Save as Copy" [ref=e149]
+            - button "Save Changes" [ref=e150]
+        - generic [ref=e151]:
+          - generic [ref=e153]:
+            - generic [ref=e157]:
+              - img "template element"
+            - 'button "Invoice #: INV-2023-001" [disabled] [ref=e159]':
+              - generic [ref=e161]: "Invoice #: INV-2023-001"
+            - 'button "Date: January 1, 2023" [disabled] [ref=e171]':
+              - generic [ref=e173]: "Date: January 1, 2023"
+            - 'button "John Doe 123 Main St, City, State 12345 Phone: (555) 123-4567 Tax ID: 123-45-6789" [disabled] [ref=e183]':
+              - generic [ref=e185]: "John Doe 123 Main St, City, State 12345 Phone: (555) 123-4567 Tax ID: 123-45-6789"
+            - button "Subtotal $200.00 Adjustment $20.00 Add Adjustment Grand Total $220.00" [disabled] [ref=e195]:
+              - generic [ref=e198]:
+                - generic [ref=e199]:
+                  - generic [ref=e200]: Subtotal
+                  - generic [ref=e201]: $200.00
+                - generic [ref=e202]:
+                  - generic [ref=e203]:
+                    - textbox [disabled] [ref=e204]: Adjustment
+                    - combobox [disabled] [ref=e205]:
+                      - generic: 10%
+                      - img [ref=e206]
+                    - button [disabled] [ref=e208]:
+                      - img [ref=e209]
+                  - generic [ref=e212]: $20.00
+                - button "Add Adjustment" [disabled] [ref=e213]
+                - generic [ref=e214]:
+                  - generic [ref=e215]: Grand Total
+                  - generic [ref=e216]: $220.00
+            - table [ref=e228]:
+              - rowgroup [ref=e229]:
+                - row "Item Quantity Rate Amount" [ref=e230]:
+                  - columnheader "Item" [ref=e231]:
+                    - text: Item
+                    - generic "Drag left or right to resize column" [ref=e232]:
+                      - generic [ref=e233]:
+                        - img [ref=e234]
+                        - img [ref=e236]
+                  - columnheader "Quantity" [ref=e238]:
+                    - text: Quantity
+                    - generic "Drag left or right to resize column" [ref=e239]:
+                      - generic [ref=e240]:
+                        - img [ref=e241]
+                        - img [ref=e243]
+                  - columnheader "Rate" [ref=e245]:
+                    - text: Rate
+                    - generic "Drag left or right to resize column" [ref=e246]:
+                      - generic [ref=e247]:
+                        - img [ref=e248]
+                        - img [ref=e250]
+                  - columnheader "Amount" [ref=e252]
+              - rowgroup [ref=e253]:
+                - row "Sample Item 1 1 $100.00 $110.00" [ref=e254]:
+                  - cell "Sample Item 1" [ref=e255]
+                  - cell "1" [ref=e256]
+                  - cell "$100.00" [ref=e257]
+                  - cell "$110.00" [ref=e258]
+                - row "Sample Item 2 2 $50.00 $100.00" [ref=e259]:
+                  - cell "Sample Item 2" [ref=e260]
+                  - cell "2" [ref=e261]
+                  - cell "$50.00" [ref=e262]
+                  - cell "$100.00" [ref=e263]
+                - row "Additional line items will appear here" [ref=e264]:
+                  - cell "Additional line items will appear here" [ref=e265]
+          - status [ref=e274]
 ```

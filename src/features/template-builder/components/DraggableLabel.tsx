@@ -17,7 +17,6 @@ export function DraggableLabel({ label, isSelected }: DraggableLabelProps) {
     disabled: !isSelected,
   });
   
-  const setSelectedItemId = useTemplateStore((state) => state.setSelectedItemId);
   const updateActiveTemplate = useTemplateStore((state) => state.updateActiveTemplate);
   const activeTemplate = useTemplateStore((state) => state.activeTemplate);
 
@@ -49,6 +48,10 @@ export function DraggableLabel({ label, isSelected }: DraggableLabelProps) {
   const width = label.width || 200;
   const height = label.height || 30;
 
+  // Check if this layer should be resizable
+  // Date, Customer info, and Invoice number layers should not be resizable
+  const isResizable = !['date-block', 'customer-info', 'invoice-number'].includes(label.id);
+
   return (
     <div
       ref={setNodeRef}
@@ -56,20 +59,17 @@ export function DraggableLabel({ label, isSelected }: DraggableLabelProps) {
       {...listeners}
       {...attributes}
       className={`absolute ${isSelected ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedItemId(label.id);
-      }}
     >
       <Resizable
         size={{ width, height }}
-        onResizeStop={handleResizeStop}
+        onResizeStop={isResizable ? handleResizeStop : undefined}
+        enable={isResizable ? undefined : false}
         className={cn(
-          "relative border-2 border-transparent",
-          isSelected && "border-accent border-dashed"
+          "relative border-2 border-dashed border-secondary",
+          isSelected && "outline-2 outline-dashed outline-accent outline-offset-2"
         )}
       >
-        <div className="w-full h-full p-1 overflow-hidden">
+        <div className="w-full h-full p-1 overflow-visible">
           <span style={{
             fontSize: label.fontSize,
             fontFamily: label.fontFamily || 'Arial',

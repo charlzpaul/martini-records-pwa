@@ -15,17 +15,60 @@ interface InvoiceState {
   loadInvoice: (id: string) => Promise<void>;
   createNewInvoice: () => void;
   updateActiveInvoice: (data: Partial<Invoice>) => void;
-  setLineItems: (lineItems: LineItem[]) => void;
+  setLineItems: (lineItems: LineItem[], templateLayers?: Array<{name: string, type: 'percentage' | 'value', percentage: number, value: number, isVisible: boolean, id?: string}>) => void;
+  setAdjustmentValue: (layerId: string, value: number, templateLayers?: Array<{name: string, type: 'percentage' | 'value', percentage: number, value: number, isVisible: boolean, id?: string}>) => void;
   saveInvoice: () => Promise<Invoice | null>;
   saveAsCopy: () => Promise<Invoice | null>;
   generatePdf: () => Promise<void>;
 }
 
-const recalculateTotals = (lineItems: LineItem[]): Pick<Invoice, 'subtotal' | 'taxAmount' | 'grandTotal'> => {
-    const subtotal = lineItems.reduce((acc, item) => acc + item.amount, 0);
-    const taxAmount = subtotal * 0.10;
-    const grandTotal = subtotal + taxAmount;
-    return { subtotal, taxAmount, grandTotal };
+const recalculateTotals = (
+  lineItems: LineItem[],
+  templateLayers?: Array<{name: string, type?: 'percentage' | 'value', percentage: number, value?: number, isVisible: boolean, id?: string}>,
+  adjustmentValues?: Record<string, number>
+): Pick<Invoice, 'subtotal' | 'taxAmount' | 'grandTotal' | 'appliedFees'> => {
+    // Subtotal is sum of (rate * quantity) for all line items (excluding percentage adjustments)
+    const subtotal = lineItems.reduce((acc, item) => acc + (item.rate * item.qty), 0);
+    
+    // Calculate applied fees based on template layers
+    const appliedFees: Record<string, number> = {};
+    let totalAdjustments = 0;
+    
+    if (templateLayers && templateLayers.length > 0) {
+      templateLayers.forEach(layer => {
+        if (layer.isVisible && layer.id) {
+          let feeAmount = 0;
+          // Handle backward compatibility: if type is not defined, assume it's percentage
+          const layerType = layer.type || 'percentage';
+          if (layerType === 'percentage' && layer.percentage !== 0) {
+            feeAmount = subtotal * (layer.percentage / 100);
+          } else if (layerType === 'value') {
+            // Use invoice-specific adjustment value if available, otherwise use template value
+            feeAmount = adjustmentValues?.[layer.id] ?? layer.value ?? 0;
+          }
+          
+          if (feeAmount !== 0) {
+            appliedFees[layer.name] = feeAmount;
+            totalAdjustments += feeAmount;
+          }
+        }
+      });
+    } else {
+      // Fallback to default tax calculation for backward compatibility
+      const taxPercentage = 10;
+      const taxAmount = subtotal * (taxPercentage / 100);
+      appliedFees['Tax'] = taxAmount;
+      totalAdjustments = taxAmount;
+    }
+    
+    const grandTotal = subtotal + totalAdjustments;
+    
+    return {
+      subtotal,
+      taxAmount: totalAdjustments, // Keep taxAmount for backward compatibility
+      grandTotal,
+      appliedFees
+    };
 };
 
 /**
@@ -121,14 +164,38 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
     });
   },
             
-  setLineItems: (lineItems: LineItem[]) => {
+  setLineItems: (lineItems: LineItem[], templateLayers?: Array<{name: string, type: 'percentage' | 'value', percentage: number, value: number, isVisible: boolean, id?: string}>) => {
     set((state: any) => {
       if (!state.activeInvoice) return {};
-      const totals = recalculateTotals(lineItems);
+      const totals = recalculateTotals(lineItems, templateLayers, state.activeInvoice.adjustmentValues);
       return {
         activeInvoice: {
           ...state.activeInvoice,
           lineItems,
+          ...totals,
+        }
+      }
+    })
+  },
+
+  setAdjustmentValue: (layerId: string, value: number, templateLayers?: Array<{name: string, type: 'percentage' | 'value', percentage: number, value: number, isVisible: boolean, id?: string}>) => {
+    set((state: any) => {
+      if (!state.activeInvoice) return {};
+      
+      // Update adjustmentValues
+      const currentAdjustmentValues = state.activeInvoice.adjustmentValues || {};
+      const updatedAdjustmentValues = {
+        ...currentAdjustmentValues,
+        [layerId]: value
+      };
+      
+      // Recalculate totals with updated adjustment values
+      const totals = recalculateTotals(state.activeInvoice.lineItems, templateLayers, updatedAdjustmentValues);
+      
+      return {
+        activeInvoice: {
+          ...state.activeInvoice,
+          adjustmentValues: updatedAdjustmentValues,
           ...totals,
         }
       }

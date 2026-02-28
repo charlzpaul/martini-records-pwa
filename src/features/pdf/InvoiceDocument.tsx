@@ -3,16 +3,26 @@ import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/render
 import type { Invoice, Template, Customer, CanvasLabel, LineItem } from '@/db/models';
 
 // Helper function to get react-pdf compatible font family
-// TEMPORARY: Always return Helvetica to debug hanging issue
-function getPdfFontFamily(_fontFamily?: string): string {
-  return 'Helvetica';
+// Map common font names to react-pdf compatible fonts
+function getPdfFontFamily(fontFamily?: string): string {
+  if (!fontFamily) return 'Helvetica';
+  
+  const fontMap: Record<string, string> = {
+    'Arial': 'Helvetica',
+    'Helvetica': 'Helvetica',
+    'Times New Roman': 'Times-Roman',
+    'Georgia': 'Times-Roman',
+    'Courier New': 'Courier',
+  };
+  
+  return fontMap[fontFamily] || 'Helvetica';
 }
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    padding: 40,
+    padding: 0,
     backgroundColor: 'white',
   },
   // Use absolute positioning for canvas elements
@@ -53,7 +63,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function getLabelValue(label: CanvasLabel, invoice: Invoice, customer?: Customer | null): string {
+function getLabelValue(label: CanvasLabel, invoice: Invoice, template: Template, customer?: Customer | null): string {
   switch (label.type) {
     case 'Subtotal':
       return `Subtotal: $${invoice.subtotal.toFixed(2)}`;
@@ -86,7 +96,49 @@ function getLabelValue(label: CanvasLabel, invoice: Invoice, customer?: Customer
         text = customerText;
       }
       
-      // Replace totals placeholder
+      // Check if this is the totals block (by ID or by content)
+      const isTotalsBlock = label.id === 'totals-block' || text.includes('Subtotal: $0.00') || text.includes('Tax 1 (10%): $0.00') || text.includes('Tax 2 (5%): $0.00') || text.includes('Total: $0.00');
+      
+      if (isTotalsBlock && template.totalsBlockGroupedLayers && template.totalsBlockGroupedLayers.length > 0) {
+        // Generate totals text based on template's totalsBlockGroupedLayers
+        const layers = template.totalsBlockGroupedLayers;
+        const lines: string[] = [];
+        
+        // Filter out subtotal and grand total layers as they are handled separately
+        const adjustmentLayers = layers.filter(layer =>
+          layer.id !== 'subtotal-layer' && layer.id !== 'grand-total-layer'
+        );
+        
+        // Find subtotal and grand total layer names
+        const subtotalLayer = layers.find(layer => layer.id === 'subtotal-layer');
+        const grandTotalLayer = layers.find(layer => layer.id === 'grand-total-layer');
+        const subtotalLabel = subtotalLayer?.name || 'Subtotal';
+        const grandTotalLabel = grandTotalLayer?.name || 'Total';
+        
+        // Subtotal line
+        lines.push(`${subtotalLabel}: $${invoice.subtotal.toFixed(2)}`);
+        
+        // Adjustment layers
+        adjustmentLayers.forEach(layer => {
+          if (layer.isVisible) {
+            const amount = invoice.appliedFees?.[layer.name] || 0;
+            const layerType = layer.type || 'percentage';
+            if (layerType === 'percentage') {
+              lines.push(`${layer.name} (${layer.percentage}%): $${amount.toFixed(2)}`);
+            } else {
+              // For value type, show as fixed amount
+              lines.push(`${layer.name}: $${amount.toFixed(2)}`);
+            }
+          }
+        });
+        
+        // Grand total line
+        lines.push(`${grandTotalLabel}: $${invoice.grandTotal.toFixed(2)}`);
+        
+        return lines.join('\n');
+      }
+      
+      // Fallback to original placeholder replacement for backward compatibility
       if (text.includes('Subtotal: $0.00')) {
         text = text.replace('Subtotal: $0.00', `Subtotal: $${invoice.subtotal.toFixed(2)}`);
       }
@@ -115,40 +167,52 @@ interface InvoiceDocumentProps {
 }
 
 export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template, customer }) => {
-  const paperSize = (template.paperSize === 'Letter' ? 'LETTER' : 'A4') as 'A4' | 'LETTER';
-  
-  // Page dimensions in points (react-pdf units)
-  const pageWidth = paperSize === 'A4' ? 595 : 612;
-  const pageHeight = paperSize === 'A4' ? 842 : 792;
-  
-  // Convert pixel to point (approximate: 1px = 0.75pt at 96 DPI)
-  const pxToPt = 0.75;
+const paperSize = (template.paperSize === 'Letter' ? 'LETTER' : 'A4') as 'A4' | 'LETTER';
+
+// Page dimensions in points (react-pdf units)
+const pageWidth = paperSize === 'A4' ? 595 : 612;
+const pageHeight = paperSize === 'A4' ? 842 : 792;
+
+// Convert pixel to point (approximate: 1px = 0.75pt at 96 DPI)
+const pxToPt = 0.75;
+
+// Get column widths from template or use defaults
+const columnWidths = template.lineItemArea.columnWidths ||
+  (template.hasPercentageColumn ? [200, 80, 80, 80, 100] : [200, 80, 80, 100]);
+
+// Calculate total width of all columns
+const totalColumnWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+
+// Calculate percentage for each column
+const columnPercentages = columnWidths.map(width => (width / totalColumnWidth) * 100);
 
   return (
     <Document>
       <Page size={paperSize} style={styles.page}>
+        {/* Main container for all template elements */}
+        <View style={{ position: 'relative', width: '100%', height: '100%' }}>
                 {/* Static Content: Images and Labels */}
                 {template.images.map(image => {
                   // Convert pixel dimensions to points
                   let width = Math.max(1, image.currentWidth * pxToPt);
                   let height = Math.max(1, image.currentHeight * pxToPt);
-                  let left = image.x * pxToPt + 40; // Add page padding
-                  let top = image.y * pxToPt + 40; // Add page padding
-                   
-                  // Calculate available space within page (accounting for 40pt padding on all sides)
-                  const maxRight = pageWidth - 40;
-                  const maxBottom = pageHeight - 40;
-                   
+                  let left = image.x * pxToPt; // NO page padding
+                  let top = image.y * pxToPt; // NO page padding
+                    
+                  // Calculate available space within page (no padding)
+                  const maxRight = pageWidth;
+                  const maxBottom = pageHeight;
+                    
                   // Ensure image stays within page bounds - adjust position if needed
-                  if (left < 40) left = 40;
-                  if (top < 40) top = 40;
+                  if (left < 0) left = 0;
+                  if (top < 0) top = 0;
                   if (left > maxRight) left = maxRight - width;
                   if (top > maxBottom) top = maxBottom - height;
-                   
+                    
                   // Calculate how much the image exceeds page bounds
                   const excessRight = Math.max(0, left + width - maxRight);
                   const excessBottom = Math.max(0, top + height - maxBottom);
-                   
+                    
                   // If image exceeds bounds, scale it down proportionally
                   if (excessRight > 0 || excessBottom > 0) {
                     // Calculate scaling factors for width and height
@@ -163,7 +227,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, templ
                     width = Math.max(1, width * scale);
                     height = Math.max(1, height * scale);
                   }
-                  
+                   
                   return (
                     <React.Fragment key={image.id}>
                       <Image
@@ -181,16 +245,16 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, templ
                   );
                 })}
                 {template.labels.filter(l => l.isVisible).map(label => {
-                  // Convert pixel position to points and adjust for padding
-                  let left = label.x * pxToPt + 40;
-                  let top = label.y * pxToPt + 40;
-                  
+                  // Convert pixel position to points - NO padding
+                  let left = label.x * pxToPt;
+                  let top = label.y * pxToPt;
+                   
                   // Ensure label stays within page bounds
-                  if (left < 40) left = 40;
-                  if (top < 40) top = 40;
-                  if (left > pageWidth - 40) left = pageWidth - 40;
-                  if (top > pageHeight - 40) top = pageHeight - 40;
-                  
+                  if (left < 0) left = 0;
+                  if (top < 0) top = 0;
+                  if (left > pageWidth) left = pageWidth;
+                  if (top > pageHeight) top = pageHeight;
+                   
                   return (
                     <React.Fragment key={label.id}>
                       <Text
@@ -198,11 +262,11 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, templ
                               ...styles.canvasObject,
                               left,
                               top,
-                              fontSize: label.fontSize,
+                              fontSize: label.fontSize * pxToPt,
                               fontFamily: getPdfFontFamily(label.fontFamily),
                           }}
                       >
-                          {getLabelValue(label, invoice, customer)}
+                          {getLabelValue(label, invoice, template, customer)}
                       </Text>
                     </React.Fragment>
                   );
@@ -211,32 +275,66 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, templ
                 {/* Dynamic Content: Line Items */}
                 <View style={{
                     position: 'absolute',
-                    left: 40, // Match page padding
-                    right: 40, // Match page padding
-                    top: template.lineItemArea.y * pxToPt + 40, // Convert pixels to points and add page padding
+                    left: template.lineItemArea.x * pxToPt, // Convert pixels to points - NO page padding
+                    top: template.lineItemArea.y * pxToPt, // Convert pixels to points - NO page padding
+                    width: template.lineItemArea.width * pxToPt,
                     height: template.lineItemArea.height * pxToPt,
                 }}>
                     <View style={styles.lineItemTable}>
-                        {/* Header */}
-                        <View style={styles.tableRow}>
-                            <Text style={{...styles.tableColHeader, width: '40%'}}>Item</Text>
-                            <Text style={styles.tableColHeader}>Quantity</Text>
-                            <Text style={styles.tableColHeader}>Rate</Text>
-                            <Text style={styles.tableColHeader}>Amount</Text>
-                        </View>
-                        {/* Rows */}
+                        {/* Rows (no header row) */}
                         {invoice.lineItems.map((item: LineItem) => (
                             <React.Fragment key={item.id}>
                               <View style={styles.tableRow}>
-                                  <Text style={{...styles.tableCol, width: '40%'}}>{item.itemName}</Text>
-                                  <Text style={styles.tableCol}>{item.qty}</Text>
-                                  <Text style={styles.tableCol}>${item.rate.toFixed(2)}</Text>
-                                  <Text style={styles.tableCol}>${item.amount.toFixed(2)}</Text>
+                                  {/* Item Name Column */}
+                                  <Text style={{
+                                    ...styles.tableCol,
+                                    width: `${columnPercentages[0]}%`,
+                                    fontFamily: getPdfFontFamily(template.lineItemArea.fontFamily),
+                                    fontSize: (template.lineItemArea.fontSize || 10) * pxToPt
+                                  }}>{item.itemName}</Text>
+                                  {/* Quantity Column */}
+                                  <Text style={{
+                                    ...styles.tableCol,
+                                    width: `${columnPercentages[1]}%`,
+                                    fontFamily: getPdfFontFamily(template.lineItemArea.fontFamily),
+                                    fontSize: (template.lineItemArea.fontSize || 10) * pxToPt
+                                  }}>{item.qty}</Text>
+                                  {/* Rate Column */}
+                                  <Text style={{
+                                    ...styles.tableCol,
+                                    width: `${columnPercentages[2]}%`,
+                                    fontFamily: getPdfFontFamily(template.lineItemArea.fontFamily),
+                                    fontSize: (template.lineItemArea.fontSize || 10) * pxToPt
+                                  }}>
+                                    {item.unit ? `$${item.rate.toFixed(2)}/${item.unit}` : `$${item.rate.toFixed(2)}`}
+                                  </Text>
+                                  {/* Percentage Column (if enabled) */}
+                                  {template.hasPercentageColumn && (
+                                      <Text style={{
+                                        ...styles.tableCol,
+                                        width: `${columnPercentages[3]}%`,
+                                        fontFamily: getPdfFontFamily(template.lineItemArea.fontFamily),
+                                        fontSize: (template.lineItemArea.fontSize || 10) * pxToPt
+                                      }}>
+                                          {/* Calculate percentage amount: base amount * (percentageValue / 100) */}
+                                          {item.percentageValue ? `$${(item.rate * item.qty * (item.percentageValue / 100)).toFixed(2)}` : '$0.00'}
+                                      </Text>
+                                  )}
+                                  {/* Amount Column (last column) */}
+                                  <Text style={{
+                                    ...styles.tableCol,
+                                    width: `${columnPercentages[template.hasPercentageColumn ? 4 : 3]}%`,
+                                    fontFamily: getPdfFontFamily(template.lineItemArea.fontFamily),
+                                    fontSize: (template.lineItemArea.fontSize || 10) * pxToPt
+                                  }}>
+                                      ${item.amount.toFixed(2)}
+                                  </Text>
                               </View>
                             </React.Fragment>
                         ))}
                     </View>
                 </View>
+        </View>
 
            </Page>
         </Document>

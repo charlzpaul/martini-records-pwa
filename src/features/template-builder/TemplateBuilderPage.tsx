@@ -8,6 +8,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { Button } from '@/components/ui/button';
 import { Home } from 'lucide-react';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import { toast } from 'sonner';
 
 export function TemplateBuilderPage() {
   const { id } = useParams<{ id:string }>();
@@ -21,11 +22,41 @@ export function TemplateBuilderPage() {
     error,
     isDirty,
     loadTemplate,
-    createNewTemplate
+    createNewTemplate,
+    saveTemplate,
+    saveAsCopy
   } = useTemplateStore();
 
   // Use unsaved changes guard
   useUnsavedChangesGuard(isDirty);
+
+  const handleSave = async () => {
+    toast.promise(saveTemplate, {
+      loading: 'Saving template...',
+      success: (savedTemplate) => {
+        // Navigate to home page after successful save
+        navigate('/');
+        return `Template "${savedTemplate?.name}" saved successfully!`;
+      },
+      error: 'Failed to save template.',
+    });
+  };
+
+  const handleSaveAsCopy = async () => {
+    toast.promise(saveAsCopy, {
+      loading: 'Saving a copy...',
+      success: (savedTemplate) => {
+        // Navigate to home page after successful save
+        navigate('/');
+        return `Template copy "${savedTemplate?.name}" created successfully!`;
+      },
+      error: 'Failed to save copy.',
+    });
+  };
+
+  const handlePreview = () => {
+    alert("Preview functionality coming soon!");
+  };
 
   useEffect(() => {
     // Prevent running multiple times in Strict Mode
@@ -65,15 +96,37 @@ export function TemplateBuilderPage() {
               <h1 className="text-3xl font-bold">Template Builder</h1>
               <p className="text-muted-foreground">Editing: {activeTemplate.name}</p>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleGoHome}
-              className="flex items-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Home</span>
-              <span className="sm:hidden">Home</span>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={handlePreview}
+                className="flex items-center gap-2"
+              >
+                Preview
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleSaveAsCopy}
+                className="flex items-center gap-2"
+              >
+                Save as Copy
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="flex items-center gap-2"
+              >
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleGoHome}
+                className="flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Home</span>
+                <span className="sm:hidden">Home</span>
+              </Button>
+            </div>
           </header>
           
           <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8 flex-grow">

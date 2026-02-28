@@ -219,7 +219,7 @@ export function FeedItem({ item }: FeedItemProps) {
                    >
                      <Trash2 className="h-5 w-5" />
                    </Button>
-                   <p className="text-xs text-muted-foreground mt-2">Created: {formatDate(pdf.createdAt)}</p>
+                   <p className="text-xs text-muted-foreground mt-2">Updated: {formatDate(pdf.updatedAt)}</p>
                  </div>
                </div>
              </div>
@@ -251,8 +251,7 @@ export function FeedItem({ item }: FeedItemProps) {
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">Created: {formatDate(customer.createdAt)}</p>
-                </div>
+                                     <p className="text-xs text-muted-foreground mt-2">Updated: {formatDate(customer.updatedAt)}</p>                </div>
               </div>
             </div>
           </div>
@@ -285,8 +284,7 @@ export function FeedItem({ item }: FeedItemProps) {
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">Created: {formatDate(product.createdAt)}</p>
-                </div>
+                                     <p className="text-xs text-muted-foreground mt-2">Updated: {formatDate(product.updatedAt)}</p>                </div>
               </div>
             </div>
           </div>

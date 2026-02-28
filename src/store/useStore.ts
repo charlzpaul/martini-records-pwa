@@ -70,12 +70,33 @@ export const useStore = create<AppState>((set) => ({
         dbApi.getProducts(),
       ]);
 
+      // Sort templates by updatedAt descending (latest modified first)
+      const sortedTemplates = [...templates].sort((a, b) => {
+        const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+        return dateB - dateA;
+      });
+
+      // Sort customers by updatedAt descending (latest modified first)
+      const sortedCustomers = [...customers].sort((a, b) => {
+        const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+        return dateB - dateA;
+      });
+
+      // Sort products by updatedAt descending (latest modified first)
+      const sortedProducts = [...products].sort((a, b) => {
+        const dateA = new Date(a.updatedAt || a.createdAt).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt).getTime();
+        return dateB - dateA;
+      });
+
       // Create the combined feed
       const invoiceFeedItems: FeedItem[] = invoices.map(i => ({ ...i, itemType: 'Invoice' }));
-      const templateFeedItems: FeedItem[] = templates.map(t => ({ ...t, itemType: 'Template' }));
+      const templateFeedItems: FeedItem[] = sortedTemplates.map(t => ({ ...t, itemType: 'Template' }));
       const pdfFeedItems: FeedItem[] = generatedPdfs.map(p => ({ ...p, itemType: 'PDF' }));
-      const customerFeedItems: FeedItem[] = customers.map(c => ({ ...c, itemType: 'Customer' }));
-      const productFeedItems: FeedItem[] = products.map(p => ({ ...p, itemType: 'Product' }));
+      const customerFeedItems: FeedItem[] = sortedCustomers.map(c => ({ ...c, itemType: 'Customer' }));
+      const productFeedItems: FeedItem[] = sortedProducts.map(p => ({ ...p, itemType: 'Product' }));
       
       const combinedFeed = [...invoiceFeedItems, ...templateFeedItems, ...pdfFeedItems, ...customerFeedItems, ...productFeedItems];
 
@@ -100,10 +121,10 @@ export const useStore = create<AppState>((set) => ({
 
       set({
         invoices,
-        templates,
+        templates: sortedTemplates,
         generatedPdfs,
-        customers,
-        products,
+        customers: sortedCustomers,
+        products: sortedProducts,
         feed: combinedFeed,
         loading: false,
       });

@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    padding: 40,
+    padding: 0,
     backgroundColor: 'white',
   },
   canvasObject: {
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
 });
 
 
-function getLabelValue(label: any, invoice: Invoice, customer?: Customer | null): string {
+function getLabelValue(label: any, invoice: Invoice, template: Template, customer?: Customer | null): string {
   switch (label.type) {
     case 'Subtotal':
       return `Subtotal: $${invoice.subtotal.toFixed(2)}`;
@@ -92,7 +92,43 @@ function getLabelValue(label: any, invoice: Invoice, customer?: Customer | null)
         text = customerText;
       }
       
-      // Replace totals placeholder
+      // Check if this is the totals block (by ID or by content)
+      const isTotalsBlock = label.id === 'totals-block' || text.includes('Subtotal: $0.00') || text.includes('HST (13%): $0.00') || text.includes('Tax 1 (10%): $0.00') || text.includes('Tax 2 (5%): $0.00') || text.includes('Total: $0.00');
+      
+      if (isTotalsBlock && template.totalsBlockGroupedLayers && template.totalsBlockGroupedLayers.length > 0) {
+        // Generate totals text based on template's totalsBlockGroupedLayers
+        const layers = template.totalsBlockGroupedLayers;
+        const lines: string[] = [];
+        
+        // Filter out subtotal and grand total layers as they are handled separately
+        const adjustmentLayers = layers.filter(layer =>
+          layer.id !== 'subtotal-layer' && layer.id !== 'grand-total-layer'
+        );
+        
+        // Find subtotal and grand total layer names
+        const subtotalLayer = layers.find(layer => layer.id === 'subtotal-layer');
+        const grandTotalLayer = layers.find(layer => layer.id === 'grand-total-layer');
+        const subtotalLabel = subtotalLayer?.name || 'Subtotal';
+        const grandTotalLabel = grandTotalLayer?.name || 'Total';
+        
+        // Subtotal line
+        lines.push(`${subtotalLabel}: $${invoice.subtotal.toFixed(2)}`);
+        
+        // Adjustment layers
+        adjustmentLayers.forEach(layer => {
+          if (layer.isVisible) {
+            const amount = invoice.appliedFees?.[layer.name] || 0;
+            lines.push(`${layer.name} (${layer.percentage}%): $${amount.toFixed(2)}`);
+          }
+        });
+        
+        // Grand total line
+        lines.push(`${grandTotalLabel}: $${invoice.grandTotal.toFixed(2)}`);
+        
+        return lines.join('\n');
+      }
+      
+      // Fallback to original placeholder replacement for backward compatibility
       if (text.includes('Subtotal: $0.00')) {
         text = text.replace('Subtotal: $0.00', `Subtotal: $${invoice.subtotal.toFixed(2)}`);
       }
@@ -125,9 +161,21 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template, cu
   // Convert pixel to point (approximate: 1px = 0.75pt at 96 DPI)
   const pxToPt = 0.75;
 
+  // Get column widths from template or use defaults
+  const columnWidths = template.lineItemArea.columnWidths ||
+    (template.hasPercentageColumn ? [200, 80, 80, 80, 100] : [200, 80, 80, 100]);
+  
+  // Calculate total width of all columns
+  const totalColumnWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+  
+  // Calculate percentage for each column
+  const columnPercentages = columnWidths.map(width => (width / totalColumnWidth) * 100);
+
   return (
     <Document>
       <Page size={paperSize} style={styles.page}>
+        {/* Main container for all template elements */}
+        <View style={{ position: 'relative', width: '100%', height: '100%' }}>
                 {/* Static Content: Images and Labels */}
                 {template.images.map(image => (
                     <Image
@@ -135,8 +183,8 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template, cu
                         src={image.base64Data}
                         style={{
                             ...styles.canvasObject,
-                            left: image.x * pxToPt + 40, // Convert pixels to points and add page padding
-                            top: image.y * pxToPt + 40,
+                            left: image.x * pxToPt, // Convert pixels to points - NO extra padding
+                            top: image.y * pxToPt,
                             width: Math.max(1, image.currentWidth * pxToPt),
                             height: Math.max(1, image.currentHeight * pxToPt),
                             opacity: image.opacity,
@@ -148,54 +196,52 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice, template, cu
                         key={label.id}
                         style={{
                             ...styles.canvasObject,
-                            left: label.x * pxToPt + 40, // Convert pixels to points and add page padding
-                            top: label.y * pxToPt + 40,
+                            left: label.x * pxToPt, // Convert pixels to points - NO extra padding
+                            top: label.y * pxToPt,
                             fontSize: label.fontSize,
                             fontFamily: getPdfFontFamily(label.fontFamily),
                         }}
                     >
-                        {getLabelValue(label, invoice, customer)}
+                        {getLabelValue(label, invoice, template, customer)}
                     </Text>
                 ))}
 
                 {/* Dynamic Content: Line Items */}
                 <View style={{
                     position: 'absolute',
-                    left: 40,
-                    right: 40,
-                    top: template.lineItemArea.y * pxToPt + 40, // Convert pixels to points and add page padding
+                    left: template.lineItemArea.x * pxToPt, // Convert pixels to points - NO extra padding
+                    top: template.lineItemArea.y * pxToPt, // Convert pixels to points - NO extra padding
+                    width: template.lineItemArea.width * pxToPt,
                     height: template.lineItemArea.height * pxToPt,
                 }}>
                     <View style={styles.lineItemTable}>
-                        {/* Header */}
-                        <View style={styles.tableRow}>
-                            <Text style={{...styles.tableColHeader, width: '40%'}}>Item</Text>
-                            <Text style={styles.tableColHeader}>Quantity</Text>
-                            <Text style={styles.tableColHeader}>Rate</Text>
-                            <Text style={styles.tableColHeader}>Amount</Text>
-                        </View>
-                        {/* Rows */}
+                        {/* Rows (no header row) */}
                         {invoice.lineItems.map((item) => (
                             <View key={item.id} style={styles.tableRow}>
-                                <Text style={{...styles.tableCol, width: '40%'}}>{item.itemName}</Text>
-                                <Text style={styles.tableCol}>{item.qty}</Text>
-                                <Text style={styles.tableCol}>${item.rate.toFixed(2)}</Text>
-                                <Text style={styles.tableCol}>${item.amount.toFixed(2)}</Text>
+                                {/* Item Name Column */}
+                                <Text style={{...styles.tableCol, width: `${columnPercentages[0]}%`}}>{item.itemName}</Text>
+                                {/* Quantity Column */}
+                                <Text style={{...styles.tableCol, width: `${columnPercentages[1]}%`}}>{item.qty}</Text>
+                                {/* Rate Column */}
+                                <Text style={{...styles.tableCol, width: `${columnPercentages[2]}%`}}>
+                                  {item.unit ? `$${item.rate.toFixed(2)}/${item.unit}` : `$${item.rate.toFixed(2)}`}
+                                </Text>
+                                {/* Percentage Column (if enabled) */}
+                                {template.hasPercentageColumn && (
+                                    <Text style={{...styles.tableCol, width: `${columnPercentages[3]}%`}}>
+                                        {/* Calculate percentage amount: base amount * (percentageValue / 100) */}
+                                        {item.percentageValue ? `$${(item.rate * item.qty * (item.percentageValue / 100)).toFixed(2)}` : '$0.00'}
+                                    </Text>
+                                )}
+                                {/* Amount Column (last column) */}
+                                <Text style={{...styles.tableCol, width: `${columnPercentages[template.hasPercentageColumn ? 4 : 3]}%`}}>
+                                    ${item.amount.toFixed(2)}
+                                </Text>
                             </View>
                         ))}
                     </View>
                 </View>
-                {/* Customer and Invoice Info */}
-                <View style={{ position: 'absolute', top: 40, left: 40 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 'bold' }}>{customer?.name}</Text>
-                    <Text>{customer?.address}</Text>
-                    <Text>{customer?.email}</Text>
-                    <Text>{customer?.phone}</Text>
-                </View>
-                <View style={{ position: 'absolute', top: 40, right: 40, alignItems: 'flex-end' }}>
-                     <Text style={{ fontSize: 14, fontWeight: 'bold' }}>Invoice #{invoice.invoiceNumber || invoice.id.substring(0,8)}</Text>
-                    <Text>Date: {new Date(invoice.date).toLocaleDateString()}</Text>
-                </View>
+        </View>
             </Page>
         </Document>
     );

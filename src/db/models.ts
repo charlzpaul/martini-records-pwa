@@ -13,6 +13,7 @@ export interface CanvasImage {
   x: number;
   y: number;
   opacity: number;
+  fileName?: string; // Optional original filename
 }
 
 /**
@@ -33,6 +34,20 @@ export interface CanvasLabel {
 }
 
 /**
+ * Represents a grouped layer within the totals block.
+ * Each layer can be a tax, discount, or custom charge with either a percentage or fixed value.
+ */
+export interface TotalsBlockGroupedLayer {
+  id: string;
+  name: string; // Display name (e.g., "Tax", "Discount", "Shipping")
+  type: 'percentage' | 'value'; // Whether this layer uses percentage or fixed value
+  percentage: number; // Percentage value (0-100) - used when type is 'percentage'
+  value: number; // Fixed value amount (positive or negative) - used when type is 'value'
+  isVisible: boolean;
+  isUndeletable?: boolean; // Whether this layer cannot be deleted (e.g., percentage column layer)
+}
+
+/**
  * Defines the structure for an invoice template, including paper size,
  * visual elements, and the area designated for line items.
  */
@@ -43,9 +58,18 @@ export interface Template {
   images: CanvasImage[];
   labels: CanvasLabel[];
   lineItemArea: {
+    x: number; // x-coordinate starting point
     y: number; // y-coordinate starting point
-    height: number; // Maximum height for the line item block
+    width: number; // Width of the line item block
+    height: number; // Height of the line item block
+    columnWidths?: number[]; // Optional array of column widths in pixels
+    fontFamily?: string; // Font family for line items text
+    fontSize?: number; // Font size for line items text
   };
+  hasPercentageColumn?: boolean; // Whether to show percentage column in line items table
+  percentageColumnHeader?: string; // Custom header name for percentage column
+  percentageColumnValue?: number; // Percentage value (1-100) for the column
+  totalsBlockGroupedLayers?: TotalsBlockGroupedLayer[]; // Grouped layers within the totals block
   createdAt: string; // ISO 8601 date string
   updatedAt: string; // ISO 8601 date string
 }
@@ -85,7 +109,9 @@ export interface LineItem {
   itemName: string;
   rate: number;
   qty: number;
-  amount: number; // Calculated: rate * qty
+  amount: number; // Calculated: rate * qty (or rate * qty * (1 + percentageValue/100) if percentage column exists)
+  percentageValue?: number; // Percentage value for this line item (1-100)
+  unit?: 'hour' | 'item' | 'service'; // Unit from product if item was selected from product catalog
 }
 
 /**
@@ -101,6 +127,8 @@ export interface Invoice {
   lineItems: LineItem[];
   // Example for appliedFees: { tax: 10, discount: 5 }
   appliedFees: Record<string, number>;
+  // Stores user-input values for value-based adjustments, keyed by adjustment layer ID
+  adjustmentValues?: Record<string, number>;
   subtotal: number;
   taxAmount: number;
   grandTotal: number;

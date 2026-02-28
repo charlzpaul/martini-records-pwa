@@ -38,9 +38,72 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     try {
       const template = await dbApi.getTemplateById(id);
       if (template) {
+        // Ensure backward compatibility: handle renamed fields and set defaults for missing fields
+        const templateWithDefaults = {
+          ...template,
+          // Handle backward compatibility for percentage column fields
+          hasPercentageColumn: template.hasPercentageColumn ?? false,
+          percentageColumnHeader: template.percentageColumnHeader ?? 'Percentage',
+          percentageColumnValue: template.percentageColumnValue ?? 10, // Default to 10%
+          // Handle backward compatibility: set default totals block grouped layers if not present
+          totalsBlockGroupedLayers: template.totalsBlockGroupedLayers ?? [
+            {
+              id: 'subtotal-layer',
+              name: 'Subtotal',
+              type: 'percentage' as const,
+              percentage: 0,
+              value: 0,
+              isVisible: true,
+              isUndeletable: true,
+            },
+            {
+              id: 'adjustment-1',
+              name: 'Adjustment',
+              type: 'percentage' as const,
+              percentage: 10,
+              value: 0,
+              isVisible: true,
+              isUndeletable: false,
+            },
+            {
+              id: 'grand-total-layer',
+              name: 'Grand Total',
+              type: 'percentage' as const,
+              percentage: 0,
+              value: 0,
+              isVisible: true,
+              isUndeletable: true,
+            }
+          ],
+        };
+        
+        // If template has percentage column but doesn't have the corresponding totals block grouped layer, add it
+        if (templateWithDefaults.hasPercentageColumn) {
+          const hasPercentageTotalsLayer = templateWithDefaults.totalsBlockGroupedLayers?.some(
+            layer => layer.id === 'percentage-column-totals-layer'
+          );
+          
+          if (!hasPercentageTotalsLayer) {
+            const percentageTotalsLayer = {
+              id: 'percentage-column-totals-layer',
+              name: templateWithDefaults.percentageColumnHeader || 'Percentage',
+              type: 'percentage' as const,
+              percentage: templateWithDefaults.percentageColumnValue || 10,
+              value: 0,
+              isVisible: true,
+              isUndeletable: true,
+            };
+            
+            templateWithDefaults.totalsBlockGroupedLayers = [
+              ...(templateWithDefaults.totalsBlockGroupedLayers || []),
+              percentageTotalsLayer
+            ];
+          }
+        }
+        
         set({
-          originalTemplate: template,
-          activeTemplate: structuredClone(template),
+          originalTemplate: templateWithDefaults,
+          activeTemplate: structuredClone(templateWithDefaults),
           loading: false,
           isDirty: false,
         });
@@ -64,7 +127,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
         {
           id: 'invoice-number',
           type: 'Custom',
-          textValue: 'Invoice #: INV-2023-001',
+          textValue: 'INV-2023-001',
           isVisible: true,
           x: 50,
           y: 100,
@@ -76,7 +139,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
         {
           id: 'date-block',
           type: 'Custom',
-          textValue: 'Date: January 1, 2023',
+          textValue: 'January 1, 2023',
           isVisible: true,
           x: 50,
           y: 130,
@@ -92,7 +155,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           isVisible: true,
           x: 50,
           y: 170,
-          fontSize: 12,
+          fontSize: 14,
           fontFamily: 'Arial',
           width: 200,
           height: 80,
@@ -102,15 +165,54 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
           type: 'Custom',
           textValue: 'Subtotal: $0.00\nTax 1 (10%): $0.00\nTax 2 (5%): $0.00\nTotal: $0.00',
           isVisible: true,
-          x: 300,
-          y: 400,
-          fontSize: 12,
+          x: 550,
+          y: 900,
+          fontSize: 14,
           fontFamily: 'Arial',
           width: 200,
           height: 100,
         }
       ],
-      lineItemArea: { y: 250, height: 400 },
+      lineItemArea: {
+        x: 40,
+        y: 250,
+        width: 714,
+        height: 400,
+        columnWidths: [200, 80, 80, 100], // Default widths for Item, Quantity, Rate, Amount columns (percentage column not included by default)
+        fontSize: 10 // Default font size for line items
+      },
+      hasPercentageColumn: false, // Percentage column is not shown by default
+      percentageColumnHeader: 'Percentage', // Default header name for percentage column
+      percentageColumnValue: 10, // Default percentage value (10%)
+      totalsBlockGroupedLayers: [
+        {
+          id: 'subtotal-layer',
+          name: 'Subtotal',
+          type: 'percentage' as const,
+          percentage: 0,
+          value: 0,
+          isVisible: true,
+          isUndeletable: true,
+        },
+        {
+          id: 'adjustment-1',
+          name: 'Adjustment',
+          type: 'percentage' as const,
+          percentage: 10,
+          value: 0,
+          isVisible: true,
+          isUndeletable: false,
+        },
+        {
+          id: 'grand-total-layer',
+          name: 'Grand Total',
+          type: 'percentage' as const,
+          percentage: 0,
+          value: 0,
+          isVisible: true,
+          isUndeletable: true,
+        }
+      ],
       createdAt: now,
       updatedAt: now,
     };

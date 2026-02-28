@@ -22,8 +22,6 @@ export function SettingsPanel() {
   const {
     activeTemplate,
     updateActiveTemplate,
-    saveTemplate,
-    saveAsCopy,
     selectedItemId,
     setSelectedItemId,
   } = useTemplateStore();
@@ -42,30 +40,6 @@ export function SettingsPanel() {
   if (!activeTemplate) return null;
 
 
-  const handleSave = async () => {
-    toast.promise(saveTemplate, {
-      loading: 'Saving template...',
-      success: (savedTemplate) => {
-        // Navigate to home page after successful save
-        navigate('/');
-        return `Template "${savedTemplate?.name}" saved successfully!`;
-      },
-      error: 'Failed to save template.',
-    });
-  };
-
-  const handleSaveAsCopy = async () => {
-    toast.promise(saveAsCopy, {
-      loading: 'Saving a copy...',
-      success: (savedTemplate) => {
-        // Navigate to home page after successful save
-        navigate('/');
-        return `Template copy "${savedTemplate?.name}" created successfully!`;
-      },
-      error: 'Failed to save copy.',
-    });
-  };
-
   const handleAddImageClick = () => {
     fileInputRef.current?.click();
   };
@@ -75,85 +49,155 @@ export function SettingsPanel() {
   const handleAddDefaultBlock = (blockType: string) => {
     if (!activeTemplate) return;
     
-    const newId = `default-${blockType}-${Date.now()}`;
-    let newLabel: CanvasLabel;
+    // Check if a layer of this type already exists
+    const existingLayers = activeTemplate.labels.filter(label =>
+      label.id.includes(blockType) ||
+      (blockType === 'customer-info' && label.id.includes('customer-info')) ||
+      (blockType === 'date-block' && label.id.includes('date-block')) ||
+      (blockType === 'invoice-number' && label.id.includes('invoice-number')) ||
+      (blockType === 'totals-block' && label.id.includes('totals-block'))
+    );
     
     // Calculate Y position: get max Y from existing labels or use 100 as default
     const labelYs = activeTemplate.labels.map(l => l.y);
     const maxY = labelYs.length > 0 ? Math.max(...labelYs) : 100;
     
-    switch (blockType) {
-      case 'customer-info':
-        newLabel = {
-          id: newId,
-          type: 'Custom',
-          textValue: 'John Doe\n123 Main St, City, State 12345\nPhone: (555) 123-4567\nTax ID: 123-45-6789',
-          isVisible: true,
-          x: 50,
-          y: maxY + 40,
-          fontSize: 12,
-          fontFamily: 'Arial',
-          width: 200,
-          height: 80,
-        };
-        break;
-      case 'date-block':
-        newLabel = {
-          id: newId,
-          type: 'Custom',
-          textValue: 'Date: January 1, 2023',
-          isVisible: true,
-          x: 50,
-          y: maxY + 40,
-          fontSize: 14,
-          width: 200,
-          height: 30,
-        };
-        break;
-      case 'invoice-number':
-        newLabel = {
-          id: newId,
-          type: 'Custom',
-          textValue: 'Invoice #: INV-2023-001',
-          isVisible: true,
-          x: 50,
-          y: maxY + 40,
-          fontSize: 14,
-          width: 200,
-          height: 30,
-        };
-        break;
-      case 'totals-block':
-        newLabel = {
-          id: newId,
-          type: 'Custom',
-          textValue: 'Subtotal: $0.00\nTax 1 (10%): $0.00\nTax 2 (5%): $0.00\nTotal: $0.00',
-          isVisible: true,
-          x: 300,
-          y: 400,
-          fontSize: 12,
-          fontFamily: 'Arial',
-          width: 200,
-          height: 100,
-        };
-        break;
-      case 'line-items-area':
-        // Ensure line items area exists with default values
-        updateActiveTemplate({
-          lineItemArea: { y: 250, height: 400 }
-        });
-        setShowBlockOptions(false);
-        toast.success('Added line items area');
-        return;
-      default:
-        return;
+    let newLabel: CanvasLabel;
+    
+    if (existingLayers.length > 0) {
+      // Create a duplicate of the first existing layer with same properties
+      const existingLayer = existingLayers[0];
+      newLabel = {
+        ...existingLayer,
+        id: `${blockType}-duplicate-${Date.now()}`,
+        // Offset position slightly so duplicate is visible but looks the same
+        x: existingLayer.x + 20,
+        y: existingLayer.y + 20,
+      };
+    } else {
+      // Create a new layer with default values
+      const newId = `default-${blockType}-${Date.now()}`;
+      
+      switch (blockType) {
+        case 'customer-info':
+          newLabel = {
+            id: newId,
+            type: 'Custom',
+            textValue: 'John Doe\n123 Main St, City, State 12345\nPhone: (555) 123-4567\nTax ID: 123-45-6789',
+            isVisible: true,
+            x: 50,
+            y: maxY + 40,
+            fontSize: 12,
+            fontFamily: 'Arial',
+            width: 200,
+            height: 80,
+          };
+          break;
+        case 'date-block':
+          newLabel = {
+            id: newId,
+            type: 'Custom',
+            textValue: 'January 1, 2023',
+            isVisible: true,
+            x: 50,
+            y: maxY + 40,
+            fontSize: 14,
+            fontFamily: 'Arial',
+            width: 200,
+            height: 30,
+          };
+          break;
+        case 'invoice-number':
+          newLabel = {
+            id: newId,
+            type: 'Custom',
+            textValue: 'INV-2023-001',
+            isVisible: true,
+            x: 50,
+            y: maxY + 40,
+            fontSize: 14,
+            fontFamily: 'Arial',
+            width: 200,
+            height: 30,
+          };
+          break;
+        case 'totals-block':
+          newLabel = {
+            id: newId,
+            type: 'Custom',
+            textValue: 'Subtotal: $0.00\nTax 1 (10%): $0.00\nTax 2 (5%): $0.00\nTotal: $0.00',
+            isVisible: true,
+            x: 550,
+            y: 900,
+            fontSize: 12,
+            fontFamily: 'Arial',
+            width: 200,
+            height: 100,
+          };
+          // For totals block, also ensure default grouped layers exist
+          if (!activeTemplate.totalsBlockGroupedLayers || activeTemplate.totalsBlockGroupedLayers.length === 0) {
+            updateActiveTemplate({
+              totalsBlockGroupedLayers: [
+                {
+                  id: 'subtotal-layer',
+                  name: 'Subtotal',
+                  type: 'percentage' as const,
+                  percentage: 0,
+                  value: 0,
+                  isVisible: true,
+                  isUndeletable: true,
+                },
+                {
+                  id: 'adjustment-1',
+                  name: 'Adjustment',
+                  type: 'percentage' as const,
+                  percentage: 10,
+                  value: 0,
+                  isVisible: true,
+                  isUndeletable: false,
+                },
+                {
+                  id: 'grand-total-layer',
+                  name: 'Grand Total',
+                  type: 'percentage' as const,
+                  percentage: 0,
+                  value: 0,
+                  isVisible: true,
+                  isUndeletable: true,
+                }
+              ]
+            });
+          }
+          break;
+        case 'line-items-area':
+          // Ensure line items area exists with default values
+          updateActiveTemplate({
+            lineItemArea: {
+              x: 40,
+              y: 250,
+              width: 714,
+              height: 400,
+              columnWidths: [200, 80, 80, 100] // Default widths for Item, Quantity, Rate, Amount columns
+            }
+          });
+          setShowBlockOptions(false);
+          toast.success('Added line items area with default properties');
+          return;
+        default:
+          return;
+      }
     }
     
     const updatedLabels = [...activeTemplate.labels, newLabel];
     updateActiveTemplate({ labels: updatedLabels });
-    setSelectedItemId(newId);
+    setSelectedItemId(newLabel.id);
     setShowBlockOptions(false);
-    toast.success(`Added ${blockType.replace('-', ' ')} block`);
+    
+    if (existingLayers.length > 0) {
+      toast.success(`Added duplicate ${blockType.replace('-', ' ')} block with same font and properties`);
+    } else {
+      toast.success(`Added ${blockType.replace('-', ' ')} block`);
+    }
   };
 
   // Function to resize and compress an image for PDF generation
@@ -213,6 +257,7 @@ export function SettingsPanel() {
     const currentActiveTemplate = activeTemplate;
     const currentUpdateActiveTemplate = updateActiveTemplate;
     const currentSetSelectedItemId = setSelectedItemId;
+    const fileName = file.name;
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -239,20 +284,39 @@ export function SettingsPanel() {
           return;
         }
         
-        // Calculate scale to make image cover canvas (cover mode)
-        // Scale image so that its longest edges parallel to canvas edges overlap
+        // Calculate scale to make image fit within canvas while maintaining aspect ratio
+        // Use "cover" mode to fill the canvas when aspect ratio is close, otherwise "contain"
         const widthRatio = canvasWidth / img.width;
         const heightRatio = canvasHeight / img.height;
-        const scale = Math.max(widthRatio, heightRatio); // Use max for cover
+        const aspectRatioDiff = Math.abs(widthRatio - heightRatio);
+        // If aspect ratio difference is less than 1%, use "cover" to fill canvas, otherwise "contain"
+        const scale = aspectRatioDiff < 0.01 ? Math.max(widthRatio, heightRatio) : Math.min(widthRatio, heightRatio);
         
         // Ensure minimum size of 50px
         const minSize = 50;
-        const width = Math.max(Math.floor(img.width * scale), minSize);
-        const height = Math.max(Math.floor(img.height * scale), minSize);
+        // Use Math.round instead of Math.floor to avoid truncation errors
+        let width = Math.max(Math.round(img.width * scale), minSize);
+        let height = Math.max(Math.round(img.height * scale), minSize);
         
-        // Center the image on canvas (may extend beyond canvas edges)
-        const x = (canvasWidth - width) / 2;
-        const y = (canvasHeight - height) / 2;
+        // Position image: if aspect ratio is close (cover mode), center it; otherwise top-right with margin
+        const margin = 20;
+        let x, y;
+        if (aspectRatioDiff < 0.01) {
+          // Cover mode: center the image and ensure it fills the canvas
+          // When aspect ratio matches closely, use canvas dimensions directly to ensure full coverage
+          width = Math.max(width, canvasWidth);
+          height = Math.max(height, canvasHeight);
+          x = (canvasWidth - width) / 2;
+          y = (canvasHeight - height) / 2;
+        } else {
+          // Contain mode: top-right corner with margin
+          x = canvasWidth - width - margin;
+          y = margin;
+        }
+        
+        // Clamp x and y to ensure image is fully inside canvas bounds
+        x = Math.max(0, Math.min(x, canvasWidth - width));
+        y = Math.max(0, Math.min(y, canvasHeight - height));
         
         // Resize and compress the image to the actual display size
         resizeAndCompressImage(img, width, height, (compressedBase64) => {
@@ -266,6 +330,7 @@ export function SettingsPanel() {
             x: x,
             y: y,
             opacity: 1,
+            fileName: fileName,
           };
 
           // Add the new image to the template
@@ -304,22 +369,6 @@ export function SettingsPanel() {
       updateActiveTemplate({ images: updatedImages });
   };
 
-  const handleLabelTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(selectedItem?.type !== 'label') return;
-    const updatedLabels = activeTemplate.labels.map(lbl =>
-        lbl.id === selectedItem.data.id ? { ...lbl, textValue: e.target.value } : lbl
-    );
-    updateActiveTemplate({ labels: updatedLabels });
-  };
-
-  const handleFontSizeChange = (value: number[]) => {
-    if(selectedItem?.type !== 'label') return;
-    const updatedLabels = activeTemplate.labels.map(lbl =>
-        lbl.id === selectedItem.data.id ? { ...lbl, fontSize: value[0] } : lbl
-    );
-    updateActiveTemplate({ labels: updatedLabels });
-  };
-
   const renderSelectedItemSettings = () => {
     if (!selectedItem) return null;
 
@@ -343,30 +392,7 @@ export function SettingsPanel() {
       );
     }
 
-    if (selectedItem.type === 'label') {
-        const label = selectedItem.data as CanvasLabel;
-        return (
-             <div className="space-y-4">
-                <h3 className="font-semibold">Selected Label</h3>
-                <div className="space-y-2">
-                    <Label htmlFor="label-text">Text</Label>
-                    <Input id="label-text" value={label.textValue} onChange={handleLabelTextChange} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="font-size-slider">Font Size</Label>
-                    <Slider
-                        id="font-size-slider"
-                        min={8}
-                        max={72}
-                        step={1}
-                        value={[label.fontSize]}
-                        onValueChange={handleFontSizeChange}
-                    />
-                </div>
-            </div>
-        )
-    }
-
+    // Don't show Selected Label section - all label editing is handled in LayerList
     return null;
   }
 
@@ -447,20 +473,6 @@ export function SettingsPanel() {
                     <FileText className="h-4 w-4" />
                     <span>Invoice Number Block</span>
                   </button>
-                  <button
-                    onClick={() => handleAddDefaultBlock('totals-block')}
-                    className="w-full flex items-center space-x-2 p-2 text-sm hover:bg-accent rounded-md text-left"
-                  >
-                    <DollarSign className="h-4 w-4" />
-                    <span>Totals Block</span>
-                  </button>
-                  <button
-                    onClick={() => handleAddDefaultBlock('line-items-area')}
-                    className="w-full flex items-center space-x-2 p-2 text-sm hover:bg-accent rounded-md text-left"
-                  >
-                    <List className="h-4 w-4" />
-                    <span>Line Items Area</span>
-                  </button>
                 </div>
               </div>
             )}
@@ -472,11 +484,6 @@ export function SettingsPanel() {
         {renderSelectedItemSettings() && <div className="pt-4 border-t">{renderSelectedItemSettings()}</div>}
       </div>
 
-      <div className="space-y-2 pt-4 border-t mt-4">
-        <Button onClick={() => alert("Preview functionality coming soon!")} variant="outline" className="w-full">Preview</Button>
-        <Button onClick={handleSaveAsCopy} variant="secondary" className="w-full">Save as Copy</Button>
-        <Button onClick={handleSave} className="w-full">Save Changes</Button>
-      </div>
     </div>
   );
 }

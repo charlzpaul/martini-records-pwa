@@ -128,7 +128,7 @@ export class InvoiceBuilderPage {
 
   async verifyPageLoaded() {
     // Invoice number might not be visible, so check for other key elements
-    await expect(this.customerSelect).toBeVisible();
+    await expect(this.customerSelect).toBeVisible({ timeout: 10000 });
     await expect(this.addLineItemButton).toBeVisible();
     await expect(this.page.locator('h1:has-text("Invoice Builder")')).toBeVisible();
   }

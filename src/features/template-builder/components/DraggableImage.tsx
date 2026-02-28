@@ -1,9 +1,6 @@
 // src/features/template-builder/components/DraggableImage.tsx
-import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { Resizable, type ResizeCallback } from 're-resizable';
 import type { CanvasImage } from '@/db/models';
-import { useTemplateStore } from '../store/useTemplateStore';
 import { cn } from '@/lib/utils';
 
 interface DraggableImageProps {
@@ -12,60 +9,25 @@ interface DraggableImageProps {
 }
 
 export function DraggableImage({ image, isSelected }: DraggableImageProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { setNodeRef } = useDraggable({
     id: image.id,
     disabled: true, // Dragging disabled for images
   });
 
-  const setSelectedItemId = useTemplateStore((state) => state.setSelectedItemId);
-  const updateActiveTemplate = useTemplateStore((state) => state.updateActiveTemplate);
-  const activeTemplate = useTemplateStore((state) => state.activeTemplate);
-
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
-
-  const isResizingRef = React.useRef(false);
-  const handleResizeStop: ResizeCallback = (_e, _direction, _ref, d) => {
-    if (isResizingRef.current || !activeTemplate) return;
-    
-    isResizingRef.current = true;
-    const newWidth = image.currentWidth + d.width;
-    const newHeight = image.currentHeight + d.height;
-
-    const updatedImages = activeTemplate.images.map(img =>
-      img.id === image.id ? { ...img, currentWidth: newWidth, currentHeight: newHeight } : img
-    );
-    updateActiveTemplate({ images: updatedImages });
-    
-    // Reset flag after a short delay
-    setTimeout(() => {
-      isResizingRef.current = false;
-    }, 100);
-  };
-  
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
       className={`absolute cursor-default`}
-      onClick={(e) => {
-        e.stopPropagation(); // Prevent canvas click from unselecting
-        setSelectedItemId(image.id);
-      }}
     >
-      <Resizable
-        size={{ width: image.currentWidth, height: image.currentHeight }}
-        onResizeStop={handleResizeStop}
-        lockAspectRatio
+      <div
         className={cn(
-            "relative border-2 border-transparent",
-            isSelected && "border-blue-500 border-dashed"
+            "relative",
+            isSelected && "outline-2 outline-blue-500 outline-dashed"
         )}
+        style={{
+          width: image.currentWidth,
+          height: image.currentHeight,
+        }}
       >
         <div className="w-full h-full">
             <img
@@ -79,7 +41,7 @@ export function DraggableImage({ image, isSelected }: DraggableImageProps) {
                 className="pointer-events-none"
             />
         </div>
-      </Resizable>
+      </div>
     </div>
   );
 }

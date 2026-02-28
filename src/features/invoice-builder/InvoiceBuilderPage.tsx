@@ -14,6 +14,7 @@ import { Home } from 'lucide-react';
 
 export function InvoiceBuilderPage() {
   const { id } = useParams<{ id: string }>();
+  console.log('InvoiceBuilderPage id:', id);
   const navigate = useNavigate();
   const {
     activeInvoice,
@@ -31,19 +32,25 @@ export function InvoiceBuilderPage() {
   useUnsavedChangesGuard(isDirty);
 
   useEffect(() => {
+    console.log('useEffect with id:', id);
     if (id) {
       if (id === 'new') {
+        console.log('calling createNewInvoice');
         createNewInvoice();
       } else {
+        console.log('calling loadInvoice with id:', id);
         loadInvoice(id);
       }
     }
   }, [id, loadInvoice, createNewInvoice]);
 
-  // Load template when invoice is loaded
+  // Load template when invoice is loaded or when template selection changes
   useEffect(() => {
-    if (activeInvoice?.templateId && !activeTemplate) {
-      loadTemplate(activeInvoice.templateId);
+    if (activeInvoice?.templateId) {
+      // Only load template if it's different from the currently loaded template
+      if (!activeTemplate || activeTemplate.id !== activeInvoice.templateId) {
+        loadTemplate(activeInvoice.templateId);
+      }
     }
   }, [activeInvoice?.templateId, activeTemplate, loadTemplate]);
 

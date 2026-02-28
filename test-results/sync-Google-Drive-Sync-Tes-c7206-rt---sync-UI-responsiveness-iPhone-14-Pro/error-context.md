@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - button "Sign in with Google" [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - heading "Quick Actions" [level=2] [ref=e10]
+        - combobox [ref=e12]:
+          - generic: USD ($)
+          - img [ref=e13]
+      - generic [ref=e16]:
+        - button "Create New Invoice" [ref=e17]: Create New Invoice
+        - button "Create New Template" [ref=e20]: Create New Template
+        - button "Add Customer" [ref=e22]:
+          - img [ref=e23]
+          - text: Add Customer
+        - button "Add Product" [ref=e26]:
+          - img [ref=e27]
+          - text: Add Product
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Activity Feed" [level=2] [ref=e33]
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - radio "All" [checked] [ref=e36]
+              - generic [ref=e37]: All
+            - generic [ref=e38]:
+              - radio "Invoices" [ref=e39]
+              - generic [ref=e40]: Invoices
+            - generic [ref=e41]:
+              - radio "Templates" [ref=e42]
+              - generic [ref=e43]: Templates
+            - generic [ref=e44]:
+              - radio "PDFs" [ref=e45]
+              - generic [ref=e46]: PDFs
+            - generic [ref=e47]:
+              - radio "Customers" [ref=e48]
+              - generic [ref=e49]: Customers
+            - generic [ref=e50]:
+              - radio "Products" [ref=e51]
+              - generic [ref=e52]: Products
+        - paragraph [ref=e53]: No activity yet.
+```

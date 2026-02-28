@@ -1,0 +1,61 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - button "Sign in with Google" [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - heading "Invoice Builder" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Creating a new invoice
+        - generic [ref=e13]:
+          - button "Home" [ref=e14]:
+            - img [ref=e15]
+            - generic [ref=e18]: Home
+          - button "Generate PDF" [ref=e19]
+          - button "Save Invoice" [ref=e20]
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - text: Nickname
+          - textbox "My Invoice" [ref=e23]
+        - generic [ref=e24]:
+          - text: Invoice Number
+          - textbox "Auto-generated" [ref=e25]
+          - paragraph [ref=e26]: Auto-generated when saved
+        - generic [ref=e27]:
+          - text: Customer
+          - combobox [active] [ref=e28]:
+            - generic: Select customer...
+            - img [ref=e29]
+        - generic [ref=e31]:
+          - text: Template
+          - combobox [ref=e32]:
+            - generic: Select a template
+            - img [ref=e33]
+        - generic [ref=e35]:
+          - text: Invoice Date
+          - button "February 28th, 2026" [ref=e36]:
+            - img [ref=e37]
+            - text: February 28th, 2026
+      - generic [ref=e39]:
+        - table [ref=e43]:
+          - rowgroup [ref=e44]:
+            - row "Item Qty Rate Amount Actions" [ref=e45]:
+              - columnheader "Item" [ref=e46]
+              - columnheader "Qty" [ref=e47]
+              - columnheader "Rate" [ref=e48]
+              - columnheader "Amount" [ref=e49]
+              - columnheader "Actions" [ref=e50]
+          - rowgroup
+        - button "Add Line Item" [ref=e51]
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: Subtotal
+            - generic [ref=e56]: $0.00
+          - generic [ref=e57]: Select a template to see totals
+          - generic [ref=e58]:
+            - generic [ref=e59]: Grand Total
+            - generic [ref=e60]: $0.00
+```
