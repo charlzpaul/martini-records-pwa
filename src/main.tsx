@@ -68,7 +68,7 @@ createRoot(document.getElementById('root')!).render(
     <Suspense fallback={<LoadingFallback />}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <BrowserRouter>
+          <BrowserRouter basename="/martini-records-pwa/">
             <ErrorBoundary>
               <App />
             </ErrorBoundary>
