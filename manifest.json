@@ -1,0 +1,23 @@
+{
+  "name": "Martini Records",
+  "short_name": "Martini",
+  "description": "Offline-first custom record generator",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/martini-records-pwa/",
+
+
+  "scope": "/",
+  "icons": [
+    {
+      "src": "martini.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": []
+}

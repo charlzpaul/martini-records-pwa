@@ -1,0 +1,1 @@
+{"name":"Martini Records","short_name":"Martini","description":"Offline-first custom record generator","start_url":"/martini-records-pwa/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","lang":"en","scope":"/martini-records-pwa/","icons":[{"src":"martini.svg","sizes":"192x192 512x512","type":"image/svg+xml","purpose":"any maskable"}]}
