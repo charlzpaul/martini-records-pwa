@@ -6,6 +6,21 @@ const DRIVE_API_URL = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3';
 const APP_DATA_FOLDER = 'Martini-Records-Backup';
 
+// Create a dedicated axios instance for Drive API
+const driveInstance = axios.create();
+
+// Add a response interceptor to handle 401 Unauthorized errors
+driveInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            console.warn('Google Drive session expired, logging out...');
+            useAuthStore.getState().logout();
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const FILE_NAMES = {
     RECORDS: 'records.json',
     TEMPLATES: 'templates.json',
@@ -29,7 +44,7 @@ async function getAppDataFolderId(): Promise<string> {
     let folderId: string | null = null;
 
     // Search for the folder
-    const searchResponse = await axios.get(`${DRIVE_API_URL}/files`, {
+    const searchResponse = await driveInstance.get(`${DRIVE_API_URL}/files`, {
         headers: await getHeaders(),
         params: {
             q: `name='${APP_DATA_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
@@ -41,7 +56,7 @@ async function getAppDataFolderId(): Promise<string> {
         folderId = searchResponse.data.files[0].id;
     } else {
         // Create the folder if it doesn't exist
-        const createFolderResponse = await axios.post(`${DRIVE_API_URL}/files`, {
+        const createFolderResponse = await driveInstance.post(`${DRIVE_API_URL}/files`, {
             name: APP_DATA_FOLDER,
             mimeType: 'application/vnd.google-apps.folder',
         }, { headers: await getHeaders() });
@@ -56,7 +71,7 @@ async function getAppDataFolderId(): Promise<string> {
 export async function getFileMetadata(fileName: string) {
     const folderId = await getAppDataFolderId();
     
-    const response = await axios.get(`${DRIVE_API_URL}/files`, {
+    const response = await driveInstance.get(`${DRIVE_API_URL}/files`, {
         headers: await getHeaders(),
         params: {
             q: `'${folderId}' in parents and name='${fileName}' and trashed=false`,
@@ -69,7 +84,7 @@ export async function getFileMetadata(fileName: string) {
 
 // Function to download a file by ID
 export async function downloadFile(fileId: string) {
-    const response = await axios.get(`${DRIVE_API_URL}/files/${fileId}`, {
+    const response = await driveInstance.get(`${DRIVE_API_URL}/files/${fileId}`, {
         headers: await getHeaders(),
         params: { alt: 'media' },
     });
@@ -85,7 +100,7 @@ export async function uploadFile(fileName: string, content: object) {
     
     if (fileMetadata) {
         // Update existing file content only - much safer with PATCH
-        await axios({
+        await driveInstance({
             method: 'PATCH',
             url: `${DRIVE_UPLOAD_URL}/files/${fileMetadata.id}?uploadType=media`,
             data: fileContent,
@@ -106,7 +121,7 @@ export async function uploadFile(fileName: string, content: object) {
         form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
         form.append('file', new Blob([fileContent], { type: 'application/json' }));
 
-        await axios({
+        await driveInstance({
             method: 'POST',
             url: `${DRIVE_UPLOAD_URL}/files?uploadType=multipart`,
             data: form,

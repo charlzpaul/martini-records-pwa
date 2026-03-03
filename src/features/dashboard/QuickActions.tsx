@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FilePlus2, PlusCircle, UserPlus, PackagePlus } from "lucide-react";
+import { FilePlus2, PlusCircle, UserPlus, PackagePlus, Download } from "lucide-react";
 import { toast } from 'sonner';
-import { saveCustomer, saveProduct } from '@/db/api';
+import { saveCustomer, saveProduct, getInvoices, getCustomers, getTemplates } from '@/db/api';
 import { useStore } from '@/store/useStore';
+import { convertInvoicesToCSV, downloadCSV } from '@/lib/exportUtils';
 
 export function QuickActions() {
   const navigate = useNavigate();
@@ -124,21 +125,56 @@ export function QuickActions() {
     }
   };
 
+  const handleExportFinancials = async () => {
+    try {
+      const invoices = await getInvoices();
+      const customers = await getCustomers();
+      const templates = await getTemplates();
+      
+      if (invoices.length === 0) {
+        toast.error('Export Error', { description: 'No records found to export' });
+        return;
+      }
+      
+      const csv = convertInvoicesToCSV(invoices, customers, templates);
+      const fileName = `financials_export_${new Date().toISOString().split('T')[0]}.csv`;
+      downloadCSV(csv, fileName);
+      
+      toast.success('Export Successful', { description: 'Financials have been exported to CSV' });
+    } catch (error) {
+      console.error('Error exporting financials:', error);
+      toast.error('Export Error', { description: 'Failed to export financials' });
+    }
+  };
+
   return (
     <div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Button variant="default" size="lg" onClick={handleCreateRecord}>
-          <FilePlus2 className="mr-2 h-4 w-4" /> Create New Record
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Button 
+          variant="default" 
+          size="lg" 
+          className="px-3 md:px-8 bg-primary hover:bg-primary/90 shadow-md transition-all hover:shadow-lg active:scale-95 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
+          onClick={handleCreateRecord}
+          title="Create New Record (Alt+N)"
+          aria-label="Create New Record"
+        >
+          <FilePlus2 className="h-5 w-5 mr-1" />
+          <div className="flex flex-col items-start leading-tight">
+            <span className="font-bold text-sm">Create Record</span>
+            <span className="text-[10px] opacity-70 hidden md:inline">Alt+N</span>
+          </div>
         </Button>
-        <Button variant="default" size="lg" onClick={handleCreateTemplate}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Create New Template
+        <Button variant="outline" size="lg" className="px-3 md:px-8" onClick={handleCreateTemplate}>
+          <PlusCircle className="h-4 w-4 mr-2" />
+          <span>New Template</span>
         </Button>
         
         {/* Add Customer Dialog */}
         <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" size="lg">
-              <UserPlus className="mr-2 h-4 w-4" /> Add Customer
+            <Button variant="outline" size="lg" className="px-3 md:px-8">
+              <UserPlus className="h-4 w-4 mr-2" />
+              <span>Add Customer</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -222,8 +258,9 @@ export function QuickActions() {
         {/* Add Product Dialog */}
         <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" size="lg">
-              <PackagePlus className="mr-2 h-4 w-4" /> Add Product
+            <Button variant="outline" size="lg" className="px-3 md:px-8">
+              <PackagePlus className="h-4 w-4 mr-2" />
+              <span>Add Product</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -299,6 +336,11 @@ export function QuickActions() {
             </div>
           </DialogContent>
         </Dialog>
+        
+        <Button variant="outline" size="lg" className="px-3 md:px-8" onClick={handleExportFinancials}>
+          <Download className="h-4 w-4 mr-2" />
+          <span>Export CSV</span>
+        </Button>
       </div>
     </div>
   );

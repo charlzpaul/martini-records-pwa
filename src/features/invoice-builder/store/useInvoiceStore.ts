@@ -4,7 +4,6 @@ import type { Invoice, LineItem } from '@/db/models';
 import * as dbApi from '@/db/api';
 import { saveGeneratedPdfForInvoice } from '@/features/pdf/generatePdf';
 import { notifyDataChange } from '@/db/events';
-import { useStore } from '@/store/useStore';
 
 interface InvoiceState {
   activeInvoice: Invoice | null;

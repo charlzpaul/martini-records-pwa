@@ -148,8 +148,11 @@ export function useDataSync() {
                 }
             }
             setPendingDownloadCount(remoteChangesCount);
-        } catch (e) {
-            console.error("Error calculating counts", e);
+        } catch (e: any) {
+            // Only log if it's not a 401 (which is handled by driveApi interceptor)
+            if (e.response?.status !== 401) {
+                console.error("Error calculating counts", e);
+            }
         }
     }, [isLoggedIn]);
 
@@ -221,9 +224,11 @@ export function useDataSync() {
                             for (const i of localData.invoices) await dbApi.saveInvoice({ ...i, lastSyncedAt: now }, true);
                         }
                     }
-                } catch (fileError) {
-                    console.error(`Failed to sync ${fileName}:`, fileError);
-                    toast.error(`Failed to sync ${fileName}.`);
+                } catch (fileError: any) {
+                    if (fileError.response?.status !== 401) {
+                        console.error(`Failed to sync ${fileName}:`, fileError);
+                        toast.error(`Failed to sync ${fileName}.`);
+                    }
                     // Continue with other files
                 }
             }
@@ -235,9 +240,11 @@ export function useDataSync() {
             } else {
                 toast.info("Everything is up to date.");
             }
-        } catch (error) {
-            console.error("Sync process failed:", error);
-            toast.error("Sync failed. Check console for details.");
+        } catch (error: any) {
+            if (error.response?.status !== 401) {
+                console.error("Sync process failed:", error);
+                toast.error("Sync failed. Check console for details.");
+            }
         } finally {
             setIsSyncing(false);
             await calculatePendingCounts();

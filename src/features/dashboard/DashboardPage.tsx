@@ -6,7 +6,6 @@ import { FeedList } from './FeedList';
 import { AppLayout } from '@/app/AppLayout';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { seedLargeData } from '@/db/seed-large';
-import { Button } from '@/components/ui/button';
 
 export function DashboardPage() {
   const fetchDashboardData = useStore((state) => state.fetchDashboardData);
@@ -14,7 +13,6 @@ export function DashboardPage() {
   const error = useStore((state) => state.error);
   const feed = useStore((state) => state.feed);
   const currency = useStore((state) => state.currency);
-  const currencySymbol = useStore((state) => state.currencySymbol);
   const setCurrency = useStore((state) => state.setCurrency);
   
   const [filter, setFilter] = useState<string>('all'); // 'all', 'Invoice', 'Template', 'PDF', 'Customer', 'Product'
@@ -28,11 +26,6 @@ export function DashboardPage() {
     : feed.filter(item => item.itemType === filter);
 
   const items = filteredFeed;
-
-  const handleSeedLarge = async () => {
-    await seedLargeData();
-    fetchDashboardData(true);
-  };
 
   return (
     <AppLayout>

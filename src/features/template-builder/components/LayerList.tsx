@@ -666,35 +666,35 @@ export function LayerList() {
                   >
                     <div className="flex items-center space-x-2 flex-grow min-w-0">
                       <Receipt className="h-4 w-4 flex-shrink-0" />
-                      <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
                         {groupedLayer.id === 'percentage-column-totals-layer' ? (
-                          <span className="text-xs whitespace-nowrap">Percentage Column</span>
+                          <span className="text-xs truncate">Percentage Column</span>
                         ) : groupedLayer.id === 'subtotal-layer' || groupedLayer.id === 'grand-total-layer' ? (
-                          <span className="text-xs whitespace-nowrap">{groupedLayer.name}</span>
+                          <span className="text-xs truncate">{groupedLayer.name}</span>
                         ) : (
-                          <>
+                          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 w-full overflow-hidden">
                             {!groupedLayer.isUndeletable && (
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Adjustment</span>
+                              <span className="text-[10px] text-muted-foreground whitespace-nowrap hidden sm:inline">Adj.</span>
                             )}
                             <Input
                               value={groupedLayer.name}
                               onChange={(e) => handleUpdateGroupedLayerName(groupedLayer.id, e.target.value)}
-                              className="h-6 text-xs w-20"
+                              className="h-6 text-xs w-16 sm:w-16 flex-shrink-1"
                               size={1}
                             />
                             {/* Don't show type dropdown and value/percentage inputs for Subtotal and Grand Total layers */}
                             {groupedLayer.id !== 'subtotal-layer' && groupedLayer.id !== 'grand-total-layer' && (
-                              <>
+                              <div className="flex items-center gap-1 flex-shrink-0">
                                 <Select
                                   value={groupedLayer.type}
                                   onValueChange={(value: 'percentage' | 'value') => handleUpdateGroupedLayerType(groupedLayer.id, value)}
                                 >
-                                  <SelectTrigger className="h-6 w-20 text-xs">
+                                  <SelectTrigger className="h-6 w-[60px] sm:w-[60px] text-[10px] sm:text-xs px-1">
                                     <SelectValue placeholder="Type" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="percentage">Percentage</SelectItem>
-                                    <SelectItem value="value">Value</SelectItem>
+                                    <SelectItem value="percentage"> % </SelectItem>
+                                    <SelectItem value="value"> $ </SelectItem>
                                   </SelectContent>
                                 </Select>
                                 {groupedLayer.type === 'percentage' ? (
@@ -702,7 +702,7 @@ export function LayerList() {
                                     value={groupedLayer.percentage.toString()}
                                     onValueChange={(value) => handleUpdateGroupedLayerPercentage(groupedLayer.id, parseInt(value))}
                                   >
-                                    <SelectTrigger className="h-6 w-16 text-xs">
+                                    <SelectTrigger className="h-6 w-[50px] sm:w-[50px] text-[10px] sm:text-xs px-1">
                                       <SelectValue placeholder="%" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -716,14 +716,14 @@ export function LayerList() {
                                     type="number"
                                     value={groupedLayer.value}
                                     onChange={(e) => handleUpdateGroupedLayerValue(groupedLayer.id, parseFloat(e.target.value) || 0)}
-                                    className="h-6 text-xs w-20"
-                                    placeholder="Value"
+                                    className="h-6 text-[10px] sm:text-xs w-14 sm:w-16"
+                                    placeholder="Val"
                                     step="0.01"
                                   />
                                 )}
-                              </>
+                              </div>
                             )}
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>

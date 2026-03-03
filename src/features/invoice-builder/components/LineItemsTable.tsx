@@ -117,9 +117,6 @@ export function LineItemsTable() {
   useEffect(() => {
     if (!activeTemplate || !activeInvoice) return;
 
-    const currentTemplateId = activeTemplate.id;
-    const previousTemplateId = prevTemplateIdRef.current;
-
     // Create a hash of template properties that affect line items
     const templatePropertiesHash = JSON.stringify({
       id: activeTemplate.id,
@@ -177,7 +174,7 @@ export function LineItemsTable() {
     // Update previous template hash reference
     prevTemplateHashRef.current = templatePropertiesHash;
     // Also update template ID reference for backward compatibility
-    prevTemplateIdRef.current = currentTemplateId;
+    prevTemplateIdRef.current = activeTemplate.id;
   }, [activeTemplate, activeInvoice, setLineItems, templateLayers]);
 
   const handleLineItemChange = (id: string, field: keyof LineItem, value: string | number) => {

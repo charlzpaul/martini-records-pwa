@@ -29,23 +29,23 @@ export function GoogleAuth() {
 
     if (isLoggedIn && profile) {
         return (
-            <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-4 bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
-                    <div className="flex items-center space-x-3 text-xs font-medium">
+            <div className="flex items-center gap-1 sm:gap-6">
+                <div className="flex items-center space-x-1.5 sm:space-x-4 bg-muted/30 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-border/50">
+                    <div className="flex items-center space-x-1.5 sm:space-x-3 text-[10px] sm:text-xs font-medium">
                         <div className="flex items-center space-x-1" title="Synced items">
-                            <CheckCircle2 className={`w-3.5 h-3.5 ${syncedCount > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                            <CheckCircle2 className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${syncedCount > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
                             <span className={syncedCount > 0 ? 'text-green-600' : 'text-muted-foreground'}>{syncedCount}</span>
                         </div>
                         <div className="flex items-center space-x-1" title="Pending to upload">
-                            <CloudUpload className={`w-3.5 h-3.5 ${pendingUploadCount > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                            <CloudUpload className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${pendingUploadCount > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
                             <span className={pendingUploadCount > 0 ? 'text-orange-600' : 'text-muted-foreground'}>{pendingUploadCount}</span>
                         </div>
                         <div className="flex items-center space-x-1" title="Pending to download">
-                            <CloudDownload className={`w-3.5 h-3.5 ${pendingDownloadCount > 0 ? 'text-blue-500' : 'text-muted-foreground'}`} />
+                            <CloudDownload className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${pendingDownloadCount > 0 ? 'text-blue-500' : 'text-muted-foreground'}`} />
                             <span className={pendingDownloadCount > 0 ? 'text-blue-600' : 'text-muted-foreground'}>{pendingDownloadCount}</span>
                         </div>
                         {isSyncing && (
-                            <RefreshCw className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                            <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500 animate-spin" />
                         )}
                     </div>
                 </div>
@@ -54,16 +54,16 @@ export function GoogleAuth() {
                     onClick={() => syncData()} 
                     disabled={isSyncing}
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 h-8 sm:h-9"
                 >
-                    {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                    Sync
+                    {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    <span className="hidden sm:inline">Sync</span>
                 </Button>
                 
-                <div className="flex items-center space-x-3 border-l pl-6">
-                    <img src={profile.picture} alt={profile.name} className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
+                <div className="flex items-center gap-1.5 sm:gap-3 border-l pl-1.5 sm:pl-6">
+                    <img src={profile.picture} alt={profile.name} className="w-7 h-7 sm:w-10 sm:h-10 rounded-full" referrerPolicy="no-referrer" />
                     <div className="flex flex-col">
-                        <p className="text-sm font-semibold leading-none">{profile.name}</p>
+                        <p className="text-xs sm:text-sm font-semibold leading-none hidden sm:block">{profile.name}</p>
                         <Button variant="link" className="p-0 h-auto text-[10px] text-muted-foreground hover:text-foreground justify-start" onClick={() => logout()}>Logout</Button>
                     </div>
                 </div>
@@ -72,8 +72,9 @@ export function GoogleAuth() {
     }
 
     return (
-        <Button onClick={() => login()} size="lg">
-            Sign in to Backup
+        <Button onClick={() => login()} size="sm" className="sm:h-10 sm:px-4 sm:py-2 px-2.5 h-8 sm:h-9">
+            <span className="sm:hidden">Sign in</span>
+            <span className="hidden sm:inline">Sign in to Backup</span>
         </Button>
     );
 }

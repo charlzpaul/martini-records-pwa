@@ -1,7 +1,7 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import type { Invoice, Template, Customer, CanvasLabel, LineItem } from '@/db/models';
-import { getCurrencySymbol } from './fonts';
+import { CURRENCY_ICONS, getCurrencyIcon, SYMBOL_TO_ISO } from './currencyIcons';
 
 
 
@@ -145,23 +145,44 @@ const SmartText = ({
     <Text style={style} {...props}>
       {parts.map((part, i) => {
         const isSymbol = symbolRegex.test(part);
-        return (
-          <Text 
-            key={i} 
-            style={{ 
-              fontFamily: isSymbol ? 'Noto Sans' : userFontFamily 
-            }}
-          >
-            {part}
-          </Text>
-        );
+        const currencyIcon = isSymbol ? getCurrencyIcon(part) : null;
+        
+        if (currencyIcon) {
+          // Render as image if a Base64 icon is available
+          // Adjust width and height as needed to fit text properly
+          return (
+            <Image 
+              key={i} 
+              src={currencyIcon} 
+              style={{
+                width: (style?.fontSize || 10) * 0.7, // Approximate width based on font size
+                height: (style?.fontSize || 10),
+                // Maintain baseline alignment with text
+                // verticalAlign: 'middle', // Not supported for Image
+                // top: '-0.1em', // Not supported for Image
+              }}
+            />
+          );
+        } else {
+          return (
+            <Text 
+              key={i} 
+              style={{
+                fontFamily: isSymbol ? 'Noto Sans' : userFontFamily
+              }}
+            >
+              {part}
+            </Text>
+          );
+        }
+
       })}
     </Text>
   );
 };
 
 // Helper to detect if a label is the totals block
-function isTotalsBlock(label: CanvasLabel, template: Template): boolean {
+function isTotalsBlock(label: CanvasLabel): boolean {
   if (label.id === 'totals-block') return true;
   const text = label.textValue;
   if (text.includes('Subtotal: $0.00') || text.includes('Tax 1 (10%): $0.00') || text.includes('Tax 2 (5%): $0.00') || text.includes('Total: $0.00')) {
@@ -172,7 +193,6 @@ function isTotalsBlock(label: CanvasLabel, template: Template): boolean {
 
 // Component to render totals block with proper formatting
 const TotalsBlockPDF = ({
-  label,
   invoice,
   template,
   left,
@@ -183,7 +203,6 @@ const TotalsBlockPDF = ({
   fontFamily,
   currencySymbol = '$'
 }: {
-  label: CanvasLabel;
   invoice: Invoice;
   template: Template;
   left: number;
@@ -440,13 +459,12 @@ const columnPercentages = columnWidths.map(width => (width / totalColumnWidth) *
                   if (top > pageHeight) top = pageHeight;
 
                   // Check if this label is the totals block
-                  if (isTotalsBlock(label, template) && template.totalsBlockGroupedLayers && template.totalsBlockGroupedLayers.length > 0) {
+                  if (isTotalsBlock(label) && template.totalsBlockGroupedLayers && template.totalsBlockGroupedLayers.length > 0) {
                     const width = (label.width || 200) * pxToPt;
                     const height = (label.height || 30) * pxToPt;
                     return (
                       <TotalsBlockPDF
                         key={label.id}
-                        label={label}
                         invoice={invoice}
                         template={template}
                         left={left}
