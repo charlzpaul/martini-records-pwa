@@ -6,7 +6,8 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",
-  "start_url": "/invoicePWApp/",
+  "start_url": "/martini-records-pwa/",
+
 
   "scope": "/",
   "icons": [
