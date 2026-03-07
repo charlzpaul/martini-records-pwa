@@ -48,7 +48,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="flex justify-between items-center max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
             <img src="/martini-records-pwa/martini.svg" alt="Martini Records" className="h-8 w-8" />
-            <span className="font-bold hidden sm:inline-block">Invoice Builder</span>
+            <span className="font-bold hidden sm:inline-block">Record Builder</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             <SupportDialog />
