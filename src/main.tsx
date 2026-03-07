@@ -1,4 +1,4 @@
-import { StrictMode, Suspense, Component, useState, useEffect } from 'react';
+import { StrictMode, Suspense, Component } from 'react';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -49,7 +49,6 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
 // Google OAuth Error Boundary to catch "_.md" errors from the library
 function GoogleOAuthErrorBoundary({ children }: { children: React.ReactNode }) {
   const [hasError, setHasError] = React.useState(false);
-  const [error, setError] = React.useState<Error | null>(null);
 
   React.useEffect(() => {
     const handleError = (e: ErrorEvent) => {
@@ -57,7 +56,6 @@ function GoogleOAuthErrorBoundary({ children }: { children: React.ReactNode }) {
         console.warn('Google OAuth error suppressed:', e.message);
         e.preventDefault();
         setHasError(true);
-        setError(new Error(e.message));
       }
     };
 
