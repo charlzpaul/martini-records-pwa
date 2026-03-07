@@ -1,36 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.5 47.5" id="cocktail">
   <defs>
-    <linearGradient id="liquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#8DAE74"/>
-      <stop offset="100%" stop-color="#7D9D5D"/>
-    </linearGradient>
+    <clipPath id="a">
+      <path d="M0 38h38V0H0v38Z"></path>
+    </clipPath>
+    <clipPath id="b">
+      <path d="M0 38h38V0H0v38Z"></path>
+    </clipPath>
   </defs>
-  
-  <!-- Glass Stem -->
-  <line x1="256" y1="300" x2="256" y2="400" stroke="#1F2937" stroke-width="20" stroke-linecap="round"/>
-  
-  <!-- Glass Base -->
-  <ellipse cx="256" cy="410" rx="124" ry="27" fill="#1F2937"/>
-  
-  <!-- Liquid (Equilateral Triangle with padding) -->
-  <!-- Glass height: 220 units (100 to 320), Liquid height: 165 units (3/4 of glass) -->
-  <!-- Side edges inline with glass edges: M 139,155 L 373,155 L 256,320 -->
-  <path d="M 139,155 L 373,155 L 256,320 Z" fill="url(#liquidGradient)" opacity="0.9"/>
-  
-  <!-- Glass Body Outline (Equilateral Triangle with padding) -->
-  <!-- Added substantial padding: x from 100 to 412, y from 100 to 320 -->
-  <path d="M 100,100 L 412,100 L 256,320 Z" fill="none" stroke="#1F2937" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
-  
-  <!-- Olive -->
-  <circle cx="282" cy="185" r="22" fill="#7D9D5D" stroke="#5C7A44" stroke-width="6"/>
-  <circle cx="282" cy="185" r="7" fill="#E11D48"/> <!-- Pimento Red -->
-  
-  <!-- Glass Reflection -->
-  <path d="M 160,115 L 230,115" fill="none" stroke="white" stroke-width="11" opacity="0.3" stroke-linecap="round"/>
-  
-  <!-- Sparkles -->
-  <g>
-    <line x1="100" y1="100" x2="78" y2="65" stroke="#ED8917" stroke-width="8" stroke-linecap="round"/>
-    <line x1="412" y1="100" x2="434" y2="65" stroke="#ED8917" stroke-width="8" stroke-linecap="round"/>
+  <g clip-path="url(#a)" transform="matrix(1.25 0 0 -1.25 0 47.5)">
+    <path fill="#8899a6" d="M20 16.745S31.458 27.786 32.583 28.75c1.125.964-.708 2.25-2.957 2.25H7.129c-1.125 0-4.483-.73-2.796-2.417C5.537 27.38 17 16.745 17 16.745V6.622s-4.584-2.34-5.498-2.883c-.984-.562-.33-1.462.063-1.617.657-.258 2.254-1.102 6.781-1.102 4.64 0 6.202.914 6.764 1.102.217.072 1.347.932.011 1.723C22.743 5.253 20 6.622 20 6.622v10.123Z"></path>
+    <path fill="#ccd6dd" d="M33 29.558c0-1.621-6.547-2.935-14.623-2.935S3.754 27.937 3.754 29.558c0 1.622 6.547 2.935 14.623 2.935S33 31.18 33 29.558"></path>
+    <path fill="#ccd6dd" d="M5.458 29.416c1.265-1.232 8.537-7.235 11.699-9.835.9-.742 2.134-.623 2.801-.123.667.5 11.167 9.583 11.167 9.583l-25.667.375Z"></path>
+  </g>
+  <g clip-path="url(#b)" transform="matrix(1.25 0 0 -1.25 0 47.5)">
+    <path fill="#662113" d="M17.868 20.468c-.237.125-.05.8.249 1.328l7.448 14.518a1.1 1.1 0 1 0 1.914-1.082l-8.668-13.885c-.15-.264-.673-1.02-.943-.879"></path>
+    <path fill="#5c913b" d="M22.745 29.145c1.133-.639 1.996-2.636 1.2-4.046-.797-1.411-2.954-1.699-4.087-1.058-1.132.639-2.065 2.514-1.199 4.045.865 1.532 2.953 1.699 4.086 1.059"></path>
+    <path fill="#fff" d="M17.797 26.239c-3.775 0-7.361.49-10.737 1.471l-.129.037a1.002 1.002 0 0 0 .555 1.922l.132-.038c6.533-1.899 13.943-1.855 22.018.132a.998.998 0 0 0 1.21-.732.999.999 0 0 0-.732-1.21c-4.288-1.055-8.403-1.582-12.317-1.582"></path>
   </g>
 </svg>
