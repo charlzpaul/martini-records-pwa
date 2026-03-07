@@ -13,21 +13,23 @@
   <ellipse cx="60" cy="165" rx="45" ry="10" fill="#1F2937"/>
   
   <!-- Liquid (Equilateral Triangle with padding) -->
-  <path d="M 32,40 L 88,40 L 60,106 Z" fill="url(#liquidGradient)" opacity="0.9"/>
+  <!-- Glass height: 90 units (30 to 120), Liquid height: 67.5 units (3/4 of glass) -->
+  <path d="M 32,52.5 L 88,52.5 L 60,120 Z" fill="url(#liquidGradient)" opacity="0.9"/>
   
   <!-- Glass Body Outline (Equilateral Triangle with padding) -->
-  <path d="M 20,20 L 100,20 L 60,106.6 Z" fill="none" stroke="#1F2937" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Added more padding: x from 22 to 98, y from 30 to 120 -->
+  <path d="M 22,30 L 98,30 L 60,120 Z" fill="none" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
   
   <!-- Olive -->
   <circle cx="68" cy="75" r="8" fill="#7D9D5D" stroke="#5C7A44" stroke-width="1.5"/>
   <circle cx="68" cy="75" r="2.5" fill="#E11D48"/> <!-- Pimento Red -->
   
   <!-- Glass Reflection -->
-  <path d="M 30,30 L 50,30" fill="none" stroke="white" stroke-width="4" opacity="0.3" stroke-linecap="round"/>
+  <path d="M 32,35 L 48,35" fill="none" stroke="white" stroke-width="3" opacity="0.3" stroke-linecap="round"/>
   
   <!-- Sparkles -->
   <g>
-    <line x1="20" y1="20" x2="15" y2="10" stroke="#ED8917" stroke-width="2" stroke-linecap="round"/>
-    <line x1="100" y1="20" x2="105" y2="10" stroke="#ED8917" stroke-width="2" stroke-linecap="round"/>
+    <line x1="22" y1="30" x2="17" y2="20" stroke="#ED8917" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="98" y1="30" x2="103" y2="20" stroke="#ED8917" stroke-width="1.5" stroke-linecap="round"/>
   </g>
 </svg>
