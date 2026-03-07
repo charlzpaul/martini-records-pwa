@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.5 47.5" id="cocktail">
+  <rect width="47.5" height="47.5" fill="white"/>
   <defs>
     <clipPath id="a">
       <path d="M0 38h38V0H0v38Z"></path>
