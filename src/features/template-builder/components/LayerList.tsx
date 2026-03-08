@@ -681,6 +681,7 @@ export function LayerList() {
                               onChange={(e) => handleUpdateGroupedLayerName(groupedLayer.id, e.target.value)}
                               className="h-6 text-xs w-16 sm:w-16 flex-shrink-1"
                               size={1}
+                              inputMode="text"
                             />
                             {/* Don't show type dropdown and value/percentage inputs for Subtotal and Grand Total layers */}
                             {groupedLayer.id !== 'subtotal-layer' && groupedLayer.id !== 'grand-total-layer' && (
