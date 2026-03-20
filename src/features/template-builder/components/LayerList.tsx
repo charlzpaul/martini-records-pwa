@@ -714,7 +714,9 @@ export function LayerList() {
                                   </Select>
                                 ) : (
                                   <Input
-                                    type="number"
+                                    type="text"
+                                    inputMode="decimal"
+                                    pattern="[0-9.-]*"
                                     value={groupedLayer.value}
                                     onChange={(e) => handleUpdateGroupedLayerValue(groupedLayer.id, parseFloat(e.target.value) || 0)}
                                     className="h-6 text-[10px] sm:text-xs w-14 sm:w-16"
